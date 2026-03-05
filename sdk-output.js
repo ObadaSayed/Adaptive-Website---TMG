@@ -1875,10 +1875,10 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         } catch (err) {
           logger.error(`Something went wrong in closing the Event Source (SSE): ${err}`);
         }
+        this.updateConversationStatus(CONVERSATION_CONSTANTS.ConversationStatus.CLOSED_CONVERSATION);
         clearWebStorage();
         clearInMemoryData();
         this.preChatData = void 0;
-        this.updateConversationStatus(CONVERSATION_CONSTANTS.ConversationStatus.CLOSED_CONVERSATION);
       });
       /**
        * Update conversation status and notify listeners
@@ -1886,14 +1886,17 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       __publicField(this, "updateConversationStatus", (status) => {
         this.conversationStatus = status;
         const conversationId2 = getConversationId();
-        if (typeof conversationId2 !== "string") {
-          logger.error("Conversation ID is not defined. Cannot update conversation status.");
-          return;
-        }
         if (status === CONVERSATION_CONSTANTS.ConversationStatus.OPENED_CONVERSATION) {
+          if (typeof conversationId2 !== "string") {
+            logger.error("Conversation ID is not defined. Cannot update conversation status.");
+            return;
+          }
           this.dispatchEvent(ConversationEventTypes.ON_EMBEDDED_MESSAGING_CONVERSATION_OPENED);
         } else if (status === CONVERSATION_CONSTANTS.ConversationStatus.CLOSED_CONVERSATION) {
-          this.dispatchEvent(ConversationEventTypes.ON_EMBEDDED_MESSAGING_CONVERSATION_CLOSED);
+          this.dispatchEvent(
+            ConversationEventTypes.ON_EMBEDDED_MESSAGING_CONVERSATION_CLOSED,
+            typeof conversationId2 === "string" ? { conversationId: conversationId2 } : {}
+          );
         }
       });
       /**
@@ -2276,15 +2279,18 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
        * End the current conversation
        */
       __publicField(this, "endConversation", async () => {
-        if (this.conversationStatus === CONVERSATION_CONSTANTS.ConversationStatus.OPENED_CONVERSATION) {
+        const conversationId2 = getConversationId();
+        if (typeof conversationId2 === "string") {
           try {
-            await closeConversation(getConversationId());
-            logger.debug(`Successfully closed the conversation with conversation-id: ${getConversationId()}`);
+            await closeConversation(conversationId2);
+            logger.debug(`Successfully closed the conversation with conversation-id: ${conversationId2}`);
           } catch (err) {
-            logger.error(`Something went wrong in closing the conversation with conversation-id ${getConversationId()}: ${err}`);
+            logger.error(`Something went wrong in closing the conversation with conversation-id ${conversationId2}: ${err}`);
           } finally {
             await this.cleanupConversation();
           }
+        } else {
+          await this.cleanupConversation();
         }
       });
       /**
@@ -2354,252 +2360,290 @@ function addAppToPage() {
   try {
     if (typeof document != "undefined") {
       var elementStyle = document.createElement("style");
-      elementStyle.appendChild(document.createTextNode(`.app {
+      elementStyle.appendChild(document.createTextNode(`:root {
+  --gold: #C9A96E;
+  --gold-light: #D4BA8A;
+  --gold-dark: #A8884F;
+  --dark: #0A0A0A;
+  --dark-card: #141414;
+  --dark-surface: #1C1C1C;
+  --cream: #FAF8F5;
+  --cream-dark: #F0EDE8;
+  --text-primary: #1A1A1A;
+  --text-secondary: #6B6B6B;
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans: 'Outfit', sans-serif;
+}
+
+.app {
   position: fixed !important;
   bottom: 0px !important;
   width: 100% !important;
   z-index: 2147483647 !important;
-  font-family: "Source Sans Pro", sans-serif !important;
+  font-family: var(--sans) !important;
   display: flex;
   flex-direction: column;
-  background: white;
+  background: var(--cream);
+  -webkit-font-smoothing: antialiased;
 }
 
 .conversation-container {
   display: flex;
   flex-direction: row;
 }
-._chatbotContainer_ixb5p_1 {
+._chatbotContainer_109q2_1 {
   display: flex;
   flex-direction: column;
   height: calc(100vh - 143px);
   width: 26vw;
-  min-width: 200px;
-  border-top: 2px solid rgba(224, 224, 224, 0.8);
-  border-right: 2px solid rgba(224, 224, 224, 0.8);
-  background: rgba(255, 255, 255);
+  min-width: 380px;
+  background: var(--cream);
+  border-right: 1px solid rgba(0, 0, 0, 0.06);
   max-height: none;
-  backdrop-filter: blur(10px);
   pointer-events: auto;
-  animation: _dropDown_ixb5p_1 0.5s ease-out forwards;
+  animation: _fadeUp_109q2_1 0.6s ease-out;
 }
 
-@keyframes _dropDown_ixb5p_1 {
+@keyframes _fadeUp_109q2_1 {
   from {
-    transform: translateY(-100vh);
     opacity: 0;
+    transform: translateY(20px);
   }
   to {
-    transform: translateY(0);
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
-._messagesContainer_ixb5p_27 {
+._messagesContainer_109q2_25 {
   flex: 1;
-  padding: 16px;
+  padding: 24px 20px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
-._message_ixb5p_27 {
+._message_109q2_25 {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  max-width: 80%;
+  flex-direction: column;
+  max-width: 85%;
+  gap: 4px;
 }
 
-._messageUser_ixb5p_43 {
+._messageUser_109q2_41 {
   align-self: flex-end;
-  flex-direction: row-reverse;
 }
 
-._messageBot_ixb5p_48 {
+._messageBot_109q2_45 {
   align-self: flex-start;
 }
 
-._agentLogo_ixb5p_52 {
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
+._chatAvatar_109q2_49 {
   display: flex;
-  justify-content: center;
-  align-self: center;
-  border-radius: 50%;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
 }
 
-._messageWrapper_ixb5p_62 {
-  flex: 1;
+._chatAvatarIcon_109q2_56 {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+._chatAvatarIcon_109q2_56 svg {
+  color: var(--dark);
+}
+
+._chatAvatarLabel_109q2_70 {
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--gold-dark);
+  font-weight: 500;
+  font-family: var(--sans);
+}
+
+._messageWrapper_109q2_79 {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: 1rem;
 }
 
-._messageContent_ixb5p_70 {
-  background: #f1f3f4;
-  padding: 12px 16px;
-  position: relative;
+._messageContent_109q2_85 {
+  padding: 14px 18px;
+  font-size: 14px;
+  line-height: 1.6;
+  font-weight: 300;
   width: fit-content;
-  color: var(--Text-text-default, #1C1C1C);
 }
 
-._messageUser_ixb5p_43 ._messageContent_ixb5p_70 {
-  background: #EEF4FF;
+._messageUser_109q2_41 ._messageContent_109q2_85 {
+  background: var(--dark);
+  color: var(--gold-light);
+  border-radius: 12px 0 12px 12px;
+  border: 1px solid rgba(201, 169, 110, 0.2);
   align-self: flex-end;
-  border-radius: 15px 15px 0px 15px;
 }
 
-._messageBot_ixb5p_48 ._messageContent_ixb5p_70 {
-  background: #F3F3F3;
+._messageBot_109q2_45 ._messageContent_109q2_85 {
+  background: var(--dark-card);
+  color: rgba(255, 255, 255, 0.85);
+  border-radius: 0 12px 12px 12px;
   align-self: flex-start;
-  border-radius: 15px 15px 15px 0px;
 }
 
-._messageText_ixb5p_90 {
-  line-height: 1.4;
+._messageText_109q2_108 {
+  line-height: 1.6;
   word-wrap: break-word;
-  max-width: 285px;
+  font-weight: 300;
 }
 
-._messageTimestamp_ixb5p_96 {
-  font-size: 11px;
-  opacity: 0.6;
-  color: var(--Text-Weak, #444);
-  margin-left: 12px;
-  align-self: flex-start;
+._messageTimestamp_109q2_114 {
+  font-size: 10px;
+  color: var(--text-secondary);
+  letter-spacing: 0.5px;
+  margin-top: 4px;
 }
 
-._messageUser_ixb5p_43 ._messageTimestamp_ixb5p_96 {
-  align-self: flex-end;
-  margin-left: 0;
-  margin-right: 12px;
+._messageUser_109q2_41 ._messageTimestamp_109q2_114 {
+  text-align: right;
 }
 
-._messageInputForm_ixb5p_110 {
-  border-top: 1px solid #e0e0e0;
-  padding: 16px 20px 16px 16px;
-  background: #393939;
+._messageInputForm_109q2_125 {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  background: #fff;
 }
 
-._messageInputContainer_ixb5p_116 {
+._messageInputContainer_109q2_131 {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  border-bottom: 3px solid #006EBE;
+  gap: 0;
 }
 
-._inputRow_ixb5p_123 {
+._inputRow_109q2_137 {
   display: flex;
   align-items: flex-end;
-  gap: 8px;
+  gap: 0;
 }
 
-._textareaContainer_ixb5p_129 {
+._textareaContainer_109q2_143 {
   position: relative;
   flex: 1;
   display: flex;
   align-items: flex-end;
 }
 
-._messageInput_ixb5p_110 {
-  flex: 1;
-  padding: 12px 50px 12px 16px;
-  border: 1px solid #ddd;
+._messageInput_109q2_125 {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--cream);
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--text-primary);
   resize: none;
-  font-size: 14px;
-  line-height: 1.4;
+  outline: none;
+  transition: border-color 0.3s;
   min-height: 20px;
   max-height: 120px;
   overflow-y: auto;
-  font-family: "Source Sans Pro", sans-serif;
+  line-height: 1.5;
+  font-weight: 300;
 }
 
-._messageInput_ixb5p_110:focus {
-  outline: none;
-  border-color: #EEF4FF;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+._messageInput_109q2_125::placeholder {
+  color: var(--text-secondary);
+  font-weight: 300;
 }
 
-._messageChoices_ixb5p_155 {
-  display: flex;
-  width: 280px;
-  flex-direction: column;
-  align-items: flex-end;
-  border-radius: 4px;
-  border: 1px solid #949494;
-  margin-top: 8px; /* Keep small margin from message box */
-  overflow: hidden; /* Ensure child elements don't overflow rounded corners */
+._messageInput_109q2_125:focus {
+  border-color: var(--gold);
 }
 
-._choiceButton_ixb5p_166 {
-  padding: 12px 16px;
-  border: none; /* Remove individual borders since container has border */
-  background: white;
-  color: #333333;
-  border-radius: 0; /* Remove default border radius */
+._messageChoices_109q2_177 {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  align-self: flex-start;
+  margin-left: 36px;
+  margin-top: 8px;
+  width: fit-content;
+  min-width: 200px;
+}
+
+._choiceButton_109q2_188 {
+  padding: 12px 20px;
+  font-size: 13px;
+  color: var(--text-primary);
+  border: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  background: transparent;
   cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  transition: all 0.2s;
+  font-weight: 400;
   text-align: left;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  width: 100%; /* Fill container width */
-  border-bottom: 1px solid #949494; /* Add border between buttons using container color */
+  width: 100%;
+  display: block;
+  font-family: var(--sans);
 }
 
-._choiceButton_ixb5p_166:hover {
-  background: #EEF4FF;
-  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+._choiceButton_109q2_188:last-child {
+  border-bottom: none;
 }
 
-._choiceButton_ixb5p_166:active {
-  box-shadow: 0 1px 2px rgba(0, 123, 255, 0.2);
+._choiceButton_109q2_188:hover {
+  background: rgba(201, 169, 110, 0.06);
+  color: var(--gold-dark);
+  padding-left: 24px;
 }
 
-._choiceButton_ixb5p_166._selected_ixb5p_192 {
-  background: #EEF4FF;
-  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+._choiceButton_109q2_188._selected_109q2_214 {
+  background: rgba(201, 169, 110, 0.1);
+  color: var(--gold-dark);
   cursor: not-allowed;
   opacity: 0.8;
 }
 
-._choiceButton_ixb5p_166._selected_ixb5p_192:hover {
-  background: #EEF4FF; /* Keep same background on hover */
-  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2); /* Keep same shadow */
+._choiceButton_109q2_188._selected_109q2_214:hover {
+  background: rgba(201, 169, 110, 0.1);
+  padding-left: 20px;
 }
 
-._typingIndicator_ixb5p_204 {
+._typingIndicator_109q2_226 {
   display: flex;
   align-items: center;
   gap: 4px;
   padding: 4px 0;
 }
 
-._typingIndicator_ixb5p_204 span {
+._typingIndicator_109q2_226 span {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #999;
-  animation: _typing_ixb5p_204 1.4s infinite ease-in-out;
+  background-color: var(--gold);
+  animation: _typing_109q2_226 1.4s infinite ease-in-out;
 }
 
-._typingIndicator_ixb5p_204 span:nth-child(1) {
+._typingIndicator_109q2_226 span:nth-child(1) {
   animation-delay: -0.32s;
 }
 
-._typingIndicator_ixb5p_204 span:nth-child(2) {
+._typingIndicator_109q2_226 span:nth-child(2) {
   animation-delay: -0.16s;
 }
 
-._typingIndicator_ixb5p_204 span:nth-child(3) {
+._typingIndicator_109q2_226 span:nth-child(3) {
   animation-delay: 0;
 }
 
-@keyframes _typing_ixb5p_204 {
+@keyframes _typing_109q2_226 {
   0%, 80%, 100% {
     transform: scale(0.8);
     opacity: 0.5;
@@ -2691,126 +2735,151 @@ function addAppToPage() {
   }
 }
 
-._headerContainer_1983q_1 {
+._headerContainer_1w65b_1 {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   position: relative;
   width: 100vw;
-  height: 70px;
-  padding: 0 30px;
-  background-color: #393939;
+  height: auto;
+  padding: 12px 24px;
+  background: var(--dark-card);
+  border-bottom: 1px solid rgba(201, 169, 110, 0.15);
 }
 
-._agentName_1983q_11 {
-  color: white;
-  font-size: 18px;
-  font-style: normal;
-  font-weight: 400;
+._agentName_1w65b_13 {
+  font-size: 11px;
+  letter-spacing: 3px;
   text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 500;
+  font-family: var(--sans);
 }
 
-._endConversationButton_1983q_19 {
-  position: absolute;
-  right: 80px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: #097fb3;
-  border: none;
-  padding: 8px 16px;
+._endConversationButton_1w65b_22 {
+  padding: 7px 20px;
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
   cursor: pointer;
-  border-radius: 4px;
-  font-size: 14px;
-  color: white;
-  transition: all 0.2s ease;
+  transition: all 0.3s;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.6);
+  border-radius: 0;
 }
 
-._endConversationButton_1983q_19:hover {
-  background-color: #076a94;
+._endConversationButton_1w65b_22:hover {
+  border-color: #c44;
+  color: #e66;
 }
 
-._minimizeButton_1983q_38 {
-  position: absolute;
-  right: 32px;
-  top: 50%;
-  color: white;
+._minimizeButton_1w65b_41 {
+  padding: 7px 20px;
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
   cursor: pointer;
-  transform: translateY(-50%);
-  border: none;
+  transition: all 0.3s;
+  background: transparent;
+  border: 1px solid rgba(201, 169, 110, 0.3);
+  color: var(--gold);
+  border-radius: 0;
   display: flex;
+  align-items: center;
+  justify-content: center;
 }
-._searchContainer_lpcxl_1 {
+
+._minimizeButton_1w65b_41:hover {
+  border-color: var(--gold);
+  background: rgba(201, 169, 110, 0.1);
+}
+._searchContainer_jta2q_1 {
   display: flex;
   width: 100vw;
-  height: 80px;
+  height: auto;
+  min-height: 80px;
   justify-content: center;
   align-items: center;
   flex-shrink: 0;
-  background: #393939;
+  background: var(--dark-card);
   position: relative;
+  padding: 16px 24px;
 }
 
-._searchForm_lpcxl_12 {
+._searchForm_jta2q_14 {
   display: flex;
   align-items: center;
-  grid-column: 2;
-  width: 94%;
-  height: 45px;
+  width: 100%;
+  max-width: 1200px;
+  height: auto;
   flex-shrink: 0;
 }
 
-._searchBar_lpcxl_21 {
+._searchBar_jta2q_23 {
   display: flex;
-  background: #FFFFFF;
-  height: 50px;
-  width: 94vw;
-  border-bottom: 3px solid #006EBE;
+  background: #fff;
+  height: auto;
+  width: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  align-items: center;
 }
 
-._searchBar_lpcxl_21:focus-within {
-  border-color: #006EBE;
-  box-shadow: 0 4px 12px rgba(66, 133, 244, 0.2);
+._searchBar_jta2q_23:focus-within {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 1px var(--gold);
 }
 
-._searchInput_lpcxl_34 {
+._searchInput_jta2q_37 {
   flex: 1;
   border: none;
   outline: none;
-  font-size: 16px;
+  font-size: 13px;
   padding: 12px 16px;
   background: transparent;
-  color: #333;
+  color: var(--text-primary);
+  font-family: var(--sans);
+  font-weight: 300;
 }
 
-._searchInput_lpcxl_34::placeholder {
-  color: #333;
-  font-size: 16px;
+._searchInput_jta2q_37::placeholder {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 300;
   overflow: hidden;
 }
 
-._searchActions_lpcxl_50 {
+._searchActions_jta2q_56 {
   display: flex;
   align-items: center;
   gap: 8px;
   margin: 0px 12px;
 }
 
-._searchActionButton_lpcxl_57 {
-  background: #097fb3;
+._searchActionButton_jta2q_63 {
+  background: var(--dark);
   border: none;
-  padding: 8px 16px;
+  padding: 8px 20px;
   cursor: pointer;
-  border-radius: 4px;
-  font-size: 14px;
-  color: white;
-  transition: all 0.2s ease;
+  border-radius: 0;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--gold);
+  transition: all 0.3s;
   white-space: nowrap;
+  font-family: var(--sans);
+  font-weight: 500;
 }
 
-._searchActionButton_lpcxl_57:hover {
-  background-color: #076a94;
+._searchActionButton_jta2q_63:hover {
+  background: var(--gold);
+  color: var(--dark);
 }
 
-._searchIcon_lpcxl_73 {
+._searchIcon_jta2q_84 {
   width: 1.5rem;
   height: 1.5rem;
   aspect-ratio: 1/1;
@@ -2821,97 +2890,136 @@ function addAppToPage() {
   flex-shrink: 0;
 }
 
-._searchIcon_lpcxl_73 img {
+._searchIcon_jta2q_84 img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
-._expandButton_lpcxl_90 {
+._expandButton_jta2q_102 {
   width: 22px;
   height: 22px;
   flex-shrink: 0;
   aspect-ratio: 1/1;
   position: absolute;
-  right: 1vw;
+  right: 24px;
   top: 50%;
   transform: translateY(-50%);
   cursor: pointer;
+  color: var(--gold);
 }
 
-._recsTemplate_1am4o_1 {
+._recsTemplate_um4kb_1 {
   display: flex;
   flex-direction: column;
   width: 100%;
-  gap: 24px;
-  font-family: "Source Sans Pro", sans-serif;
+  gap: 20px;
+  animation: _fadeUp_um4kb_1 0.6s ease-out;
 }
 
-._recsBanner_1am4o_9 {
+@keyframes _fadeUp_um4kb_1 {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+._recsBanner_um4kb_20 {
   position: relative;
   width: 100%;
-  height: 250px;
+  height: 240px;
   overflow: hidden;
-  border-radius: 8px;
 }
 
-._recsBanner_1am4o_9 img {
+._recsBanner_um4kb_20 img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  filter: brightness(0.85) contrast(1.05);
+  transition: transform 6s ease-out;
 }
 
-._recsBannerOverlay_1am4o_23 {
+._recsBanner_um4kb_20:hover img {
+  transform: scale(1.03);
+}
+
+._recsBannerOverlay_um4kb_39 {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.3) 50%, transparent 100%);
+  background: linear-gradient(to top, rgba(10, 10, 10, 0.88) 0%, rgba(10, 10, 10, 0.35) 55%, transparent 100%);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 24px;
+  padding: 28px 24px;
 }
 
-._recsBannerTitle_1am4o_33 {
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
+._recsBannerTitle_um4kb_49 {
+  color: var(--gold);
+  font-size: 10px;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  margin: 0 0 12px 0;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  letter-spacing: 3px;
+  margin: 0 0 14px 0;
+  font-family: var(--sans);
 }
 
-._recsBannerOptions_1am4o_43 {
+._recsBannerOptions_um4kb_59 {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-._recsBannerOption_1am4o_43 {
-  background: rgba(255, 255, 255, 0.95);
-  color: #0d1b2a;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+._recsBannerOption_um4kb_59 {
+  background: transparent;
+  color: #fff;
+  padding: 7px 18px;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  border: 1px solid rgba(201, 169, 110, 0.6);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  font-family: var(--sans);
 }
 
-._recsProductsGrid_1am4o_59 {
+._recsBannerOption_um4kb_59:hover {
+  background: var(--gold);
+  color: var(--dark);
+  border-color: var(--gold);
+}
+
+._recsProductsGrid_um4kb_84 {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  padding: 0 16px 24px;
 }
 
-._compareButtonContainer_1am4o_66 {
+._recsProductsGrid_um4kb_84 > *:nth-child(1) {
+  animation: _fadeUp_um4kb_1 0.5s 0.1s both;
+}
+
+._recsProductsGrid_um4kb_84 > *:nth-child(2) {
+  animation: _fadeUp_um4kb_1 0.5s 0.2s both;
+}
+
+._recsProductsGrid_um4kb_84 > *:nth-child(3) {
+  animation: _fadeUp_um4kb_1 0.5s 0.3s both;
+}
+
+._compareButtonContainer_um4kb_103 {
   position: absolute;
   bottom: 0px;
   left: 50%;
   transform: translate(-50%, -50%);
 }
 
-._compareButton_1am4o_66 {
+._compareButton_um4kb_103 {
   background-color: #097fb3;
   color: white;
   padding: 12px 24px;
@@ -2923,11 +3031,11 @@ function addAppToPage() {
   border: none;
 }
 
-._compareButton_1am4o_66:hover {
+._compareButton_um4kb_103:hover {
   background-color: #076a94;
 }
 
-._compareButton_1am4o_66:active {
+._compareButton_um4kb_103:active {
   background-color: #055a7a;
 }._productLink_1oysg_1 {
   text-decoration: none;
@@ -3140,109 +3248,208 @@ function addAppToPage() {
   color: #e0e0e0;
 }
 
-._propertyCardWrapper_i699b_1 {
+._propertyCardWrapper_1jp9m_1 {
   display: flex;
   flex-direction: column;
 }
 
-._propertyImageLink_i699b_6 {
+._propertyImageLink_1jp9m_6 {
   text-decoration: none;
   color: inherit;
   display: block;
 }
 
-._propertyCard_i699b_1 {
-  position: relative;
-  background: white;
+._propertyCard_1jp9m_1 {
   display: flex;
   flex-direction: column;
+  background: #fff;
   overflow: hidden;
-  transition: box-shadow 0.2s ease;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  cursor: pointer;
 }
 
-._propertyCard_i699b_1:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+._propertyCard_1jp9m_1:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.08);
+  border-color: rgba(201, 169, 110, 0.3);
 }
 
-._propertyBadge_i699b_25 {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  background-color: #097fb3;
-  color: white;
-  padding: 4px 10px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  z-index: 2;
-  border-radius: 4px;
-}
-
-._propertyImageContainer_i699b_40 {
+._propertyImageWrapper_1jp9m_28 {
+  position: relative;
   width: 100%;
-  height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f5f5f5;
+  aspect-ratio: 16 / 11;
   overflow: hidden;
 }
 
-._propertyImageContainer_i699b_40 img {
+._propertyImage_1jp9m_6 {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-._propertyInfo_i699b_56 {
-  padding: 16px;
+._propertyCard_1jp9m_1:hover ._propertyImage_1jp9m_6 {
+  transform: scale(1.06);
+}
+
+._propertyBadge_1jp9m_46 {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 4px 12px;
+  background: var(--gold);
+  color: var(--dark);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  z-index: 2;
+  font-family: var(--sans);
+}
+
+._propertyCommunity_1jp9m_61 {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  padding: 5px 12px;
+  background: rgba(10, 10, 10, 0.75);
+  backdrop-filter: blur(6px);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  z-index: 2;
+  font-family: var(--sans);
+}
+
+._propertyBody_1jp9m_76 {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  padding: 16px 14px 0;
   gap: 8px;
 }
 
-._propertyName_i699b_63 {
-  font-size: 15px;
-  font-weight: 600;
-  color: #333;
-  line-height: 1.4;
+._propertyName_1jp9m_84 {
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--dark);
+  line-height: 1.2;
   margin: 0;
 }
 
-._propertyPrice_i699b_71 {
-  font-size: 16px;
+._propertyPrice_1jp9m_93 {
+  font-family: var(--serif);
+  font-size: 18px;
   font-weight: 600;
-  color: #097fb3;
-}
-
-._propertyDescription_i699b_77 {
-  font-size: 13px;
-  color: #666;
-  line-height: 1.5;
+  color: var(--gold-dark);
   margin: 0;
 }
 
-._viewMoreButton_i699b_84 {
-  margin-top: 12px;
+._propertySpecs_1jp9m_101 {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+._propertySpec_1jp9m_101 {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-family: var(--sans);
+}
+
+._propertySpec_1jp9m_101 svg {
+  width: 13px;
+  height: 13px;
+  color: var(--gold);
+  opacity: 0.7;
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+._propertySeparator_1jp9m_127 {
   width: 100%;
-  background-color: #097fb3;
-  color: white;
-  padding: 10px 16px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
+  height: 1px;
+  background: linear-gradient(to right, var(--gold), transparent);
+  opacity: 0.25;
+  margin: 4px 0;
+}
+
+._propertyDetails_1jp9m_135 {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  font-weight: 300;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 10px;
+  font-family: var(--sans);
+}
+
+._propertyDetailItem_1jp9m_146 {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+._propertyDetailDot_1jp9m_152 {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--gold);
+  flex-shrink: 0;
+}
+
+._propertyDescription_1jp9m_160 {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  font-weight: 300;
+  margin: 0;
+  font-family: var(--sans);
+}
+
+._viewMoreButton_1jp9m_169 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: calc(100% + 28px);
+  margin: auto -14px 0;
+  padding: 13px;
+  background: var(--dark);
+  color: var(--gold);
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
   border: none;
-  border-radius: 6px;
-  transition: background-color 0.2s ease;
+  cursor: pointer;
+  transition: all 0.3s;
 }
 
-._viewMoreButton_i699b_84:hover {
-  background-color: #076a94;
+._viewMoreButton_1jp9m_169:hover {
+  background: var(--gold);
+  color: var(--dark);
 }
 
-._viewMoreButton_i699b_84:active {
-  background-color: #055a7a;
+._viewMoreButton_1jp9m_169 svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.3s;
+}
+
+._viewMoreButton_1jp9m_169:hover svg {
+  transform: translateX(3px);
 }
 ._comparisonTemplate_1nvy2_1 {
   display: flex;
@@ -3807,6 +4014,1297 @@ function addAppToPage() {
 
   ._propertyDetailsTemplate_1r7ri_1 {
     padding: 16px;
+  }
+}
+/* ═══════════════════════════════════════════
+   PROJECT DETAILS PANEL (right side)
+   ═══════════════════════════════════════════ */
+._detailsPanel_ftvpl_4 {
+  overflow-y: auto;
+  background: var(--cream);
+  scroll-behavior: smooth;
+}
+
+/* ── DETAILS HERO ── */
+._detailsHero_ftvpl_11 {
+  position: relative;
+  height: 340px;
+  overflow: hidden;
+}
+
+._detailsHero_ftvpl_11 img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.7) contrast(1.05);
+}
+
+._detailsHeroOverlay_ftvpl_24 {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(10,10,10,0.95) 0%,
+    rgba(10,10,10,0.5) 40%,
+    rgba(10,10,10,0.15) 100%
+  );
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 36px 40px;
+}
+
+._detailsHeroBack_ftvpl_39 {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(10,10,10,0.5);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.7);
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-decoration: none;
+  border: none;
+}
+
+._detailsHeroBack_ftvpl_39:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+._detailsHeroBack_ftvpl_39 svg {
+  width: 14px;
+  height: 14px;
+}
+
+._detailsHeroBadge_ftvpl_71 {
+  display: inline-block;
+  padding: 5px 16px;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  font-weight: 500;
+  margin-bottom: 16px;
+  width: fit-content;
+  font-family: var(--sans);
+}
+
+._detailsHero_ftvpl_11 h1 {
+  font-family: var(--serif);
+  font-size: 42px;
+  font-weight: 300;
+  color: #fff;
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+
+._detailsHero_ftvpl_11 h1 em {
+  font-style: italic;
+  color: var(--gold);
+}
+
+._detailsHeroDeveloper_ftvpl_99 {
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  font-weight: 400;
+  font-family: var(--sans);
+}
+
+._detailsHeroDeveloper_ftvpl_99 span {
+  color: var(--gold-light);
+}
+
+/* hero stats strip */
+._detailsStats_ftvpl_113 {
+  display: flex;
+  background: var(--dark);
+  border-bottom: 1px solid rgba(201,169,110,0.12);
+}
+
+._detailsStat_ftvpl_113 {
+  flex: 1;
+  padding: 20px 24px;
+  text-align: center;
+  border-right: 1px solid rgba(255,255,255,0.04);
+  transition: background 0.3s;
+}
+
+._detailsStat_ftvpl_113:last-child {
+  border-right: none;
+}
+
+._detailsStat_ftvpl_113:hover {
+  background: rgba(201,169,110,0.04);
+}
+
+._detailsStatValue_ftvpl_135 {
+  font-family: var(--serif);
+  font-size: 26px;
+  font-weight: 400;
+  color: var(--gold);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+._detailsStatLabel_ftvpl_144 {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  font-weight: 400;
+  font-family: var(--sans);
+}
+
+/* ── SECTION COMMON ── */
+._ds_ftvpl_154 {
+  padding: 48px 40px;
+}
+
+._dsLight_ftvpl_158 {
+  background: var(--cream);
+}
+
+._dsWhite_ftvpl_162 {
+  background: #fff;
+}
+
+._dsDark_ftvpl_166 {
+  background: var(--dark);
+  color: #fff;
+}
+
+._dsDarker_ftvpl_171 {
+  background: var(--dark-card);
+  color: #fff;
+}
+
+._dsLabel_ftvpl_176 {
+  font-size: 10px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 500;
+  margin-bottom: 12px;
+  font-family: var(--sans);
+}
+
+._dsTitle_ftvpl_186 {
+  font-family: var(--serif);
+  font-size: 32px;
+  font-weight: 300;
+  line-height: 1.2;
+  margin-bottom: 16px;
+}
+
+._dsTitle_ftvpl_186 em {
+  font-style: italic;
+  color: var(--gold);
+}
+
+._dsDesc_ftvpl_199 {
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  max-width: 640px;
+  font-family: var(--sans);
+}
+
+._dsDark_ftvpl_166 ._dsDesc_ftvpl_199 {
+  color: rgba(255,255,255,0.5);
+}
+
+/* ── DESCRIPTION SECTION ── */
+._descSection_ftvpl_213 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+._descHighlights_ftvpl_220 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+._descHighlight_ftvpl_220 {
+  padding: 20px;
+  background: rgba(201,169,110,0.04);
+  border: 1px solid rgba(201,169,110,0.1);
+  transition: all 0.3s;
+}
+
+._descHighlight_ftvpl_220:hover {
+  background: rgba(201,169,110,0.08);
+  border-color: rgba(201,169,110,0.25);
+}
+
+._descHighlightValue_ftvpl_239 {
+  font-family: var(--serif);
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--gold-dark);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+._descHighlightLabel_ftvpl_248 {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  font-family: var(--sans);
+}
+
+/* ── UNIT TYPES ── */
+._unitTypesHeader_ftvpl_257 {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 32px;
+}
+
+._unitTabs_ftvpl_264 {
+  display: flex;
+  gap: 6px;
+}
+
+._unitTab_ftvpl_264 {
+  padding: 8px 20px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.45);
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+._unitTab_ftvpl_264._active_ftvpl_282,
+._unitTab_ftvpl_264:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: rgba(201,169,110,0.06);
+}
+
+._unitGrid_ftvpl_289 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+._unitCard_ftvpl_295 {
+  background: var(--dark-surface);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.04);
+  transition: all 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  cursor: pointer;
+}
+
+._unitCard_ftvpl_295:hover {
+  transform: translateY(-3px);
+  border-color: rgba(201,169,110,0.3);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+}
+
+._unitCardImg_ftvpl_309 {
+  position: relative;
+  aspect-ratio: 16/10;
+  overflow: hidden;
+}
+
+._unitCardImg_ftvpl_309 img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+._unitCard_ftvpl_295:hover ._unitCardImg_ftvpl_309 img {
+  transform: scale(1.06);
+}
+
+._unitCardType_ftvpl_326 {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 3px 10px;
+  background: var(--gold);
+  color: var(--dark);
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-family: var(--sans);
+}
+
+._unitCardBody_ftvpl_340 {
+  padding: 14px;
+}
+
+._unitCardName_ftvpl_344 {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 500;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+._unitCardSpecs_ftvpl_352 {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+._unitCardSpec_ftvpl_352 {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: rgba(255,255,255,0.45);
+  font-family: var(--sans);
+}
+
+._unitCardSpec_ftvpl_352 svg {
+  width: 12px;
+  height: 12px;
+  color: var(--gold);
+  opacity: 0.6;
+}
+
+._unitCardArea_ftvpl_374 {
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+._unitCardAreaVal_ftvpl_382 {
+  font-family: var(--serif);
+  font-size: 16px;
+  color: var(--gold);
+}
+
+._unitCardDl_ftvpl_388 {
+  font-size: 10px;
+  color: var(--gold);
+  text-decoration: none;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  opacity: 0.7;
+  transition: opacity 0.3s;
+  font-family: var(--sans);
+}
+
+._unitCardDl_ftvpl_388:hover {
+  opacity: 1;
+}
+
+/* ── FACILITIES GRID ── */
+._facilitiesGrid_ftvpl_404 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  margin-top: 32px;
+}
+
+._facilityItem_ftvpl_411 {
+  position: relative;
+  aspect-ratio: 4/3;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+._facilityItem_ftvpl_411 img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+._facilityItem_ftvpl_411:hover img {
+  transform: scale(1.08);
+}
+
+._facilityOverlay_ftvpl_429 {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(10,10,10,0.88) 0%, transparent 55%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px;
+  transition: background 0.4s;
+}
+
+._facilityItem_ftvpl_411:hover ._facilityOverlay_ftvpl_429 {
+  background: linear-gradient(to top, rgba(10,10,10,0.94) 0%, rgba(10,10,10,0.3) 100%);
+}
+
+._facilityName_ftvpl_444 {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 400;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+._facilityDesc_ftvpl_452 {
+  font-size: 11px;
+  color: rgba(255,255,255,0.55);
+  line-height: 1.6;
+  font-weight: 300;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.5s ease, opacity 0.4s;
+  font-family: var(--sans);
+}
+
+._facilityItem_ftvpl_411:hover ._facilityDesc_ftvpl_452 {
+  max-height: 80px;
+  opacity: 1;
+}
+
+/* ── SMART HOME ── */
+._smartGrid_ftvpl_470 {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1px;
+  margin-top: 32px;
+  background: rgba(255,255,255,0.04);
+}
+
+._smartItem_ftvpl_478 {
+  padding: 32px 20px;
+  text-align: center;
+  background: var(--dark-card);
+  border: 1px solid rgba(255,255,255,0.03);
+  transition: all 0.4s;
+}
+
+._smartItem_ftvpl_478:hover {
+  background: rgba(201,169,110,0.05);
+  border-color: rgba(201,169,110,0.15);
+}
+
+._smartIcon_ftvpl_491 {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(201,169,110,0.4);
+  border-radius: 50%;
+}
+
+._smartIcon_ftvpl_491 svg {
+  color: var(--gold);
+}
+
+._smartItem_ftvpl_478 h4 {
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 400;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+._smartItem_ftvpl_478 p {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  line-height: 1.6;
+  font-weight: 300;
+  font-family: var(--sans);
+}
+
+/* ── AMENITIES ── */
+._amenitiesLayout_ftvpl_523 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 36px;
+  margin-top: 32px;
+}
+
+._amenityCol_ftvpl_530 h3 {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 400;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--gold);
+  color: var(--text-primary);
+}
+
+._amenityList_ftvpl_540 {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0;
+  margin: 0;
+}
+
+._amenityList_ftvpl_540 li {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  padding-left: 16px;
+  position: relative;
+  font-family: var(--sans);
+}
+
+._amenityList_ftvpl_540 li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 7px;
+  width: 5px;
+  height: 5px;
+  background: var(--gold);
+  border-radius: 50%;
+}
+
+/* ── FINANCIAL + CONNECTIVITY ROW ── */
+._dualSection_ftvpl_571 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+._dualSection_ftvpl_571 > div {
+  padding: 48px 40px;
+}
+
+._finCards_ftvpl_580 {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+._finCard_ftvpl_580 {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  background: rgba(201,169,110,0.04);
+  border: 1px solid rgba(201,169,110,0.08);
+  transition: all 0.3s;
+}
+
+._finCard_ftvpl_580:hover {
+  background: rgba(201,169,110,0.08);
+  border-color: rgba(201,169,110,0.2);
+}
+
+._finCardIcon_ftvpl_602 {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(201,169,110,0.08);
+  border-radius: 50%;
+}
+
+._finCardIcon_ftvpl_602 svg {
+  color: var(--gold);
+}
+
+._finCardLabel_ftvpl_617 {
+  font-size: 11px;
+  color: var(--text-secondary);
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+  font-family: var(--sans);
+}
+
+._finCardValue_ftvpl_625 {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--gold-dark);
+}
+
+/* connectivity */
+._connItems_ftvpl_633 {
+  display: flex;
+  flex-direction: column;
+  margin-top: 24px;
+}
+
+._connItem_ftvpl_633 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+._connItemDest_ftvpl_647 {
+  font-size: 13px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.6);
+  font-family: var(--sans);
+}
+
+._connItemTime_ftvpl_654 {
+  font-family: var(--serif);
+  font-size: 20px;
+  color: var(--gold);
+  font-weight: 400;
+}
+
+._connNote_ftvpl_661 {
+  margin-top: 20px;
+  padding: 16px 20px;
+  background: rgba(201,169,110,0.06);
+  border-left: 2px solid var(--gold);
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  font-weight: 300;
+  line-height: 1.6;
+  font-family: var(--sans);
+}
+
+/* ── CTA STRIP ── */
+._ctaStrip_ftvpl_674 {
+  padding: 40px;
+  background: var(--dark);
+  text-align: center;
+  border-top: 1px solid rgba(201,169,110,0.1);
+}
+
+._ctaStrip_ftvpl_674 h3 {
+  font-family: var(--serif);
+  font-size: 28px;
+  font-weight: 300;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+._ctaStrip_ftvpl_674 h3 em {
+  font-style: italic;
+  color: var(--gold);
+}
+
+._ctaStrip_ftvpl_674 p {
+  font-size: 13px;
+  color: rgba(255,255,255,0.4);
+  font-weight: 300;
+  margin-bottom: 24px;
+  font-family: var(--sans);
+}
+
+._ctaStripActions_ftvpl_702 {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+._btnGold_ftvpl_708 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  background: var(--gold);
+  color: var(--dark);
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+._btnGold_ftvpl_708:hover {
+  background: var(--gold-light);
+  transform: translateY(-1px);
+}
+
+._btnGhost_ftvpl_731 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  background: transparent;
+  color: rgba(255,255,255,0.6);
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: 1px solid rgba(255,255,255,0.15);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+._btnGhost_ftvpl_731:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+/* ── SCROLL ANIMATIONS ── */
+._reveal_ftvpl_755 {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: all 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+._reveal_ftvpl_755._visible_ftvpl_761 {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1100px) {
+  ._facilitiesGrid_ftvpl_404 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  ._smartGrid_ftvpl_470 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  ._amenitiesLayout_ftvpl_523 {
+    grid-template-columns: 1fr;
+  }
+  ._dualSection_ftvpl_571 {
+    grid-template-columns: 1fr;
+  }
+  ._descSection_ftvpl_213 {
+    grid-template-columns: 1fr;
+  }
+  ._unitGrid_ftvpl_289 {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  ._detailsHero_ftvpl_11 h1 {
+    font-size: 32px;
+  }
+  ._dsTitle_ftvpl_186 {
+    font-size: 24px;
+  }
+  ._detailsStats_ftvpl_113 {
+    flex-wrap: wrap;
+  }
+  ._detailsStat_ftvpl_113 {
+    flex: 1 1 50%;
+  }
+}
+/* Schedule Appointment Template Styles */
+
+._schedulePanel_qsl9a_3 {
+  overflow-y: auto;
+  background: var(--cream);
+  width: 100%;
+  height: 100%;
+}
+
+/* Hero Section */
+._scheduleHero_qsl9a_11 {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+._scheduleHero_qsl9a_11 img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.55) contrast(1.05);
+}
+
+._scheduleHeroOverlay_qsl9a_24 {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.3) 60%, transparent 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 32px 40px;
+}
+
+._scheduleHeroLabel_qsl9a_34 {
+  font-size: 10px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+._scheduleHero_qsl9a_11 h1 {
+  font-family: var(--serif);
+  font-size: 36px;
+  font-weight: 300;
+  color: #fff;
+  line-height: 1.15;
+  margin: 0;
+}
+
+._scheduleHero_qsl9a_11 h1 em {
+  font-style: italic;
+  color: var(--gold);
+}
+
+/* Content Grid */
+._scheduleContent_qsl9a_58 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  animation: _fadeUp_qsl9a_1 0.6s ease-out;
+}
+
+/* LEFT SIDE - Info */
+._scheduleInfo_qsl9a_65 {
+  padding: 40px;
+  background: #fff;
+  border-right: 1px solid rgba(0,0,0,0.06);
+}
+
+._infoBlock_qsl9a_71 {
+  margin-bottom: 36px;
+}
+
+._infoBlock_qsl9a_71:last-child {
+  margin-bottom: 0;
+}
+
+._infoBlockTitle_qsl9a_79 {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(201,169,110,0.2);
+}
+
+/* Address Card */
+._addressCard_qsl9a_90 {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+._addressPinCircle_qsl9a_96 {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  background: rgba(201,169,110,0.08);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+._addressPinCircle_qsl9a_96 svg {
+  width: 20px;
+  height: 20px;
+  color: var(--gold);
+}
+
+._addressLines_qsl9a_114 {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+._addressName_qsl9a_120 {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+._addressLine_qsl9a_114 {
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+._directionsLink_qsl9a_135 {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+  padding: 9px 22px;
+  border: 1px solid var(--gold);
+  color: var(--gold-dark);
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: all 0.3s;
+}
+
+._directionsLink_qsl9a_135:hover {
+  background: var(--gold);
+  color: var(--dark);
+}
+
+._directionsLink_qsl9a_135 svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Operating Hours */
+._hoursCompact_qsl9a_163 {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+._hoursRow_qsl9a_169 {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+._hoursIconCircle_qsl9a_175 {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+._hoursIconCircle_qsl9a_175._open_qsl9a_185 {
+  background: rgba(46,125,91,0.08);
+}
+
+._hoursIconCircle_qsl9a_175._closed_qsl9a_189 {
+  background: rgba(204,68,68,0.08);
+}
+
+._hoursIconCircle_qsl9a_175 svg {
+  width: 18px;
+  height: 18px;
+}
+
+._hoursLabel_qsl9a_198 {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+._hoursValue_qsl9a_207 {
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+._badgeOpen_qsl9a_214 {
+  display: inline-block;
+  padding: 2px 10px;
+  background: rgba(46,125,91,0.1);
+  color: #2E7D5B;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
+._badgeClosed_qsl9a_227 {
+  display: inline-block;
+  padding: 2px 10px;
+  background: rgba(204,68,68,0.08);
+  color: #C44;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
+/* Contact Methods */
+._contactRow_qsl9a_241 {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+
+._contactRow_qsl9a_241:last-child {
+  border-bottom: none;
+}
+
+._contactIcon_qsl9a_253 {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(201,169,110,0.08);
+  border-radius: 50%;
+}
+
+._contactIcon_qsl9a_253 svg {
+  width: 16px;
+  height: 16px;
+  color: var(--gold);
+}
+
+._contactLabel_qsl9a_270 {
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 2px;
+}
+
+._contactValue_qsl9a_278 {
+  font-size: 15px;
+  color: var(--gold-dark);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+._contactValue_qsl9a_278:hover {
+  color: var(--gold);
+}
+
+/* Parking Note */
+._parkingNote_qsl9a_291 {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 16px 20px;
+  background: rgba(201,169,110,0.04);
+  border-left: 2px solid var(--gold);
+  margin-top: 8px;
+}
+
+._parkingNote_qsl9a_291 svg {
+  width: 18px;
+  height: 18px;
+  color: var(--gold);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+._parkingNote_qsl9a_291 p {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* RIGHT SIDE - Map */
+._scheduleRight_qsl9a_318 {
+  display: flex;
+  flex-direction: column;
+}
+
+._mapContainer_qsl9a_323 {
+  position: relative;
+  flex: 1;
+  min-height: 380px;
+  background: var(--cream-dark);
+  overflow: hidden;
+}
+
+._mapContainer_qsl9a_323 iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  filter: saturate(0.85) contrast(1.05);
+}
+
+._mapPlaceholder_qsl9a_338 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: var(--cream-dark);
+}
+
+._mapPlaceholderContent_qsl9a_346 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 40px;
+  text-align: center;
+}
+
+._mapPlaceholderContent_qsl9a_346 svg {
+  width: 64px;
+  height: 64px;
+  color: var(--gold);
+  opacity: 0.6;
+}
+
+._mapPlaceholderContent_qsl9a_346 p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 400;
+  margin: 0;
+}
+
+._mapPlaceholderLink_qsl9a_369 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--gold);
+  color: var(--dark);
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+
+._mapPlaceholderLink_qsl9a_369:hover {
+  background: var(--gold-dark);
+  transform: translateY(-1px);
+}
+
+._mapOverlayCard_qsl9a_391 {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  background: #fff;
+  padding: 16px 20px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+._mapOverlayPin_qsl9a_404 {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  background: var(--gold);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+._mapOverlayPin_qsl9a_404 svg {
+  color: var(--dark);
+  width: 16px;
+  height: 16px;
+}
+
+._mapOverlayInfo_qsl9a_421 {
+  flex: 1;
+}
+
+._mapOverlayInfo_qsl9a_421 h4 {
+  font-family: var(--serif);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 2px 0;
+}
+
+._mapOverlayInfo_qsl9a_421 p {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 300;
+  margin: 0;
+}
+
+._mapDirBtn_qsl9a_440 {
+  margin-left: auto;
+  padding: 8px 16px;
+  background: var(--dark);
+  color: var(--gold);
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+._mapDirBtn_qsl9a_440:hover {
+  background: var(--gold);
+  color: var(--dark);
+}
+
+/* Animations */
+@keyframes _fadeUp_qsl9a_1 {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+  ._scheduleContent_qsl9a_58 {
+    grid-template-columns: 1fr;
+  }
+  
+  ._mapContainer_qsl9a_323 {
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 900px) {
+  ._scheduleInfo_qsl9a_65 {
+    border-right: none;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
   }
 }`));
       document.head.appendChild(elementStyle);
@@ -16315,32 +17813,36 @@ function requireClient() {
 var clientExports = requireClient();
 var reactExports = requireReact();
 const React = /* @__PURE__ */ getDefaultExportFromCjs(reactExports);
-const chatbotContainer = "_chatbotContainer_ixb5p_1";
-const messagesContainer = "_messagesContainer_ixb5p_27";
-const message = "_message_ixb5p_27";
-const messageUser = "_messageUser_ixb5p_43";
-const messageBot = "_messageBot_ixb5p_48";
-const agentLogo = "_agentLogo_ixb5p_52";
-const messageWrapper = "_messageWrapper_ixb5p_62";
-const messageContent = "_messageContent_ixb5p_70";
-const messageText = "_messageText_ixb5p_90";
-const messageTimestamp = "_messageTimestamp_ixb5p_96";
-const messageInputForm = "_messageInputForm_ixb5p_110";
-const messageInputContainer = "_messageInputContainer_ixb5p_116";
-const inputRow = "_inputRow_ixb5p_123";
-const textareaContainer = "_textareaContainer_ixb5p_129";
-const messageInput = "_messageInput_ixb5p_110";
-const messageChoices = "_messageChoices_ixb5p_155";
-const choiceButton = "_choiceButton_ixb5p_166";
-const selected = "_selected_ixb5p_192";
-const typingIndicator$1 = "_typingIndicator_ixb5p_204";
-const styles$a = {
+const chatbotContainer = "_chatbotContainer_109q2_1";
+const messagesContainer = "_messagesContainer_109q2_25";
+const message = "_message_109q2_25";
+const messageUser = "_messageUser_109q2_41";
+const messageBot = "_messageBot_109q2_45";
+const chatAvatar = "_chatAvatar_109q2_49";
+const chatAvatarIcon = "_chatAvatarIcon_109q2_56";
+const chatAvatarLabel = "_chatAvatarLabel_109q2_70";
+const messageWrapper = "_messageWrapper_109q2_79";
+const messageContent = "_messageContent_109q2_85";
+const messageText = "_messageText_109q2_108";
+const messageTimestamp = "_messageTimestamp_109q2_114";
+const messageInputForm = "_messageInputForm_109q2_125";
+const messageInputContainer = "_messageInputContainer_109q2_131";
+const inputRow = "_inputRow_109q2_137";
+const textareaContainer = "_textareaContainer_109q2_143";
+const messageInput = "_messageInput_109q2_125";
+const messageChoices = "_messageChoices_109q2_177";
+const choiceButton = "_choiceButton_109q2_188";
+const selected = "_selected_109q2_214";
+const typingIndicator$1 = "_typingIndicator_109q2_226";
+const styles$c = {
   chatbotContainer,
   messagesContainer,
   message,
   messageUser,
   messageBot,
-  agentLogo,
+  chatAvatar,
+  chatAvatarIcon,
+  chatAvatarLabel,
   messageWrapper,
   messageContent,
   messageText,
@@ -16420,7 +17922,6 @@ const getMessagePayloadFromConversationEntry = (entry) => {
   }
 };
 const ChatBot = ({ show }) => {
-  const AGENT_LOGO_IMAGE_URL = "https://zzpq-010.dx.commercecloud.salesforce.com/on/demandware.static/Sites-nto-Site/-/default/dw9814f411/images/favicons/favicon-32x32.png";
   const AGENT_NAME = "Adaptive Web Agent";
   const [inputText, setInputText] = reactExports.useState("");
   const [isAnotherParticipantTyping, setIsAnotherParticipantTyping] = reactExports.useState(false);
@@ -16475,42 +17976,56 @@ const ChatBot = ({ show }) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: show && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$a.chatbotContainer, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$a.messagesContainer, ref: messagesContainerRef, children: [
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: show && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$c.chatbotContainer, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$c.messagesContainer, ref: messagesContainerRef, children: [
       conversationEntries.filter(window.AdaptiveWebsite.util.isTextMessage).map((entry) => {
         const messagePayload = getMessagePayloadFromConversationEntry(entry);
         if (messagePayload) {
           const isMessageFromEndUser = window.AdaptiveWebsite.util.isMessageFromEndUser(entry);
-          return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `${styles$a.message} ${isMessageFromEndUser ? styles$a.messageUser : styles$a.messageBot}`, children: [
-            !isMessageFromEndUser && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$a.agentLogo, children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: AGENT_LOGO_IMAGE_URL, alt: "Agent Logo" }) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$a.messageWrapper, children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$a.messageContent, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$a.messageText, children: messagePayload == null ? void 0 : messagePayload.text }) }),
+          return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `${styles$c.message} ${isMessageFromEndUser ? styles$c.messageUser : styles$c.messageBot}`, children: [
+            !isMessageFromEndUser && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$c.chatAvatar, children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$c.chatAvatarIcon, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M12 2L2 7l10 5 10-5-10-5z" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M2 17l10 5 10-5" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M2 12l10 5 10-5" })
+              ] }) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$c.chatAvatarLabel, children: AGENT_NAME })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$c.messageWrapper, children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$c.messageContent, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$c.messageText, children: messagePayload == null ? void 0 : messagePayload.text }) }),
               (messagePayload == null ? void 0 : messagePayload.options) && /* @__PURE__ */ jsxRuntimeExports.jsx(MessageOptions, { options: messagePayload.options }),
-              entry.transcriptedTimestamp && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$a.messageTimestamp, children: [
-                !isMessageFromEndUser ? `${AGENT_NAME} • ` : "Sent • ",
+              entry.transcriptedTimestamp && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$c.messageTimestamp, children: [
+                !isMessageFromEndUser ? `${AGENT_NAME} · ` : "Sent · ",
                 formatTimestamp(entry.transcriptedTimestamp)
               ] })
             ] })
           ] }, entry.identifier);
         }
       }),
-      isAnotherParticipantTyping && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `${styles$a.message} ${styles$a.messageBot}`, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$a.agentLogo, children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: AGENT_LOGO_IMAGE_URL, alt: "Agent Logo" }) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$a.messageWrapper, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$a.messageContent, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$a.typingIndicator, children: [
+      isAnotherParticipantTyping && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `${styles$c.message} ${styles$c.messageBot}`, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$c.chatAvatar, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$c.chatAvatarIcon, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M12 2L2 7l10 5 10-5-10-5z" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M2 17l10 5 10-5" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M2 12l10 5 10-5" })
+          ] }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$c.chatAvatarLabel, children: AGENT_NAME })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$c.messageWrapper, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$c.messageContent, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$c.typingIndicator, children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("span", {}),
           /* @__PURE__ */ jsxRuntimeExports.jsx("span", {}),
           /* @__PURE__ */ jsxRuntimeExports.jsx("span", {})
         ] }) }) })
       ] })
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("form", { onSubmit: handleSendMessage, className: styles$a.messageInputForm, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$a.messageInputContainer, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$a.inputRow, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$a.textareaContainer, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+    /* @__PURE__ */ jsxRuntimeExports.jsx("form", { onSubmit: handleSendMessage, className: styles$c.messageInputForm, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$c.messageInputContainer, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$c.inputRow, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$c.textareaContainer, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
       "textarea",
       {
         value: inputText,
         onChange: (e) => setInputText(e.target.value),
         onKeyDown: handleKeyPress,
         placeholder: "Ask me anything...",
-        className: styles$a.messageInput,
+        className: styles$c.messageInput,
         rows: 1
       }
     ) }) }) }) })
@@ -16521,19 +18036,19 @@ const MessageOptions = ({ options }) => {
   const handleChoiceSelection = (event, option) => {
     var _a;
     window.AdaptiveWebsite.sendTextMessage(option.name);
-    event.currentTarget.classList.add(styles$a.selected);
+    event.currentTarget.classList.add(styles$c.selected);
     (_a = messageChoicesRef.current) == null ? void 0 : _a.querySelectorAll("button").forEach((button) => {
       if (button !== event.currentTarget) {
-        button.classList.remove(styles$a.selected);
+        button.classList.remove(styles$c.selected);
       }
     });
   };
   if (Array.isArray(options) && options.length > 0) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { ref: messageChoicesRef, className: styles$a.messageChoices, children: options.map((option) => {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { ref: messageChoicesRef, className: styles$c.messageChoices, children: options.map((option) => {
       return /* @__PURE__ */ jsxRuntimeExports.jsx(
         "button",
         {
-          className: styles$a.choiceButton,
+          className: styles$c.choiceButton,
           onClick: (e) => handleChoiceSelection(e, option),
           children: option.name
         },
@@ -16620,7 +18135,7 @@ const contentZoneContainer = "_contentZoneContainer_1hs9j_1";
 const contentZoneContent = "_contentZoneContent_1hs9j_25";
 const blankContent = "_blankContent_1hs9j_34";
 const typingIndicator = "_typingIndicator_1hs9j_44";
-const styles$9 = {
+const styles$b = {
   contentZoneContainer,
   contentZoneContent,
   blankContent,
@@ -18498,22 +20013,25 @@ function requireAdaptiveWebController() {
           } catch (err) {
             logger2.error(`Something went wrong in closing the Event Source (SSE): ${err}`);
           }
+          this.updateConversationStatus(CONVERSATION_CONSTANTS.ConversationStatus.CLOSED_CONVERSATION);
           clearWebStorage();
           clearInMemoryData();
           this.preChatData = void 0;
-          this.updateConversationStatus(CONVERSATION_CONSTANTS.ConversationStatus.CLOSED_CONVERSATION);
         });
         __publicField(this, "updateConversationStatus", (status) => {
           this.conversationStatus = status;
           const conversationId2 = getConversationId();
-          if (typeof conversationId2 !== "string") {
-            logger2.error("Conversation ID is not defined. Cannot update conversation status.");
-            return;
-          }
           if (status === CONVERSATION_CONSTANTS.ConversationStatus.OPENED_CONVERSATION) {
+            if (typeof conversationId2 !== "string") {
+              logger2.error("Conversation ID is not defined. Cannot update conversation status.");
+              return;
+            }
             this.dispatchEvent(ConversationEventTypes.ON_EMBEDDED_MESSAGING_CONVERSATION_OPENED);
           } else if (status === CONVERSATION_CONSTANTS.ConversationStatus.CLOSED_CONVERSATION) {
-            this.dispatchEvent(ConversationEventTypes.ON_EMBEDDED_MESSAGING_CONVERSATION_CLOSED);
+            this.dispatchEvent(
+              ConversationEventTypes.ON_EMBEDDED_MESSAGING_CONVERSATION_CLOSED,
+              typeof conversationId2 === "string" ? { conversationId: conversationId2 } : {}
+            );
           }
         });
         __publicField(this, "handleNewConversation", async () => {
@@ -18834,15 +20352,18 @@ function requireAdaptiveWebController() {
           await this.sendTextMessageInternal(conversationId2, value, messageId, inReplyToMessageId, void 0, routingAttributes, language);
         });
         __publicField(this, "endConversation", async () => {
-          if (this.conversationStatus === CONVERSATION_CONSTANTS.ConversationStatus.OPENED_CONVERSATION) {
+          const conversationId2 = getConversationId();
+          if (typeof conversationId2 === "string") {
             try {
-              await closeConversation(getConversationId());
-              logger2.debug(`Successfully closed the conversation with conversation-id: ${getConversationId()}`);
+              await closeConversation(conversationId2);
+              logger2.debug(`Successfully closed the conversation with conversation-id: ${conversationId2}`);
             } catch (err) {
-              logger2.error(`Something went wrong in closing the conversation with conversation-id ${getConversationId()}: ${err}`);
+              logger2.error(`Something went wrong in closing the conversation with conversation-id ${conversationId2}: ${err}`);
             } finally {
               await this.cleanupConversation();
             }
+          } else {
+            await this.cleanupConversation();
           }
         });
         __publicField(this, "startNewConversation", async (preChatData) => {
@@ -18904,6 +20425,8 @@ const Recs$2 = React.lazy(() => __vitePreload(() => Promise.resolve().then(() =>
 const Comparison$2 = React.lazy(() => __vitePreload(() => Promise.resolve().then(() => Comparison$1), true ? void 0 : void 0));
 const ProductDetails$2 = React.lazy(() => __vitePreload(() => Promise.resolve().then(() => ProductDetails$1), true ? void 0 : void 0));
 const PropertyDetails$2 = React.lazy(() => __vitePreload(() => Promise.resolve().then(() => PropertyDetails$1), true ? void 0 : void 0));
+const ProjectOverview$2 = React.lazy(() => __vitePreload(() => Promise.resolve().then(() => ProjectOverview$1), true ? void 0 : void 0));
+const ScheduleAppointment$2 = React.lazy(() => __vitePreload(() => Promise.resolve().then(() => ScheduleAppointment$1), true ? void 0 : void 0));
 const ContentZone = ({ show }) => {
   const [contentZoneContent2, setContentZoneContent] = reactExports.useState();
   const previousContentRef = reactExports.useRef(null);
@@ -18933,7 +20456,29 @@ const ContentZone = ({ show }) => {
     previousContentRef.current = null;
   };
   const handleContentReceived = (event) => {
-    setContentZoneContent(event.detail.content);
+    const content = event.detail.content;
+    if (content) {
+      console.log("[ContentZone] Content received:", content);
+      if (content.text && !content.curation && content.text.includes("```json")) {
+        try {
+          let jsonText = content.text.trim();
+          if (jsonText.startsWith("```json")) {
+            jsonText = jsonText.replace(/^```json\s*/, "").replace(/\s*```$/, "").trim();
+          } else if (jsonText.startsWith("```")) {
+            jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
+          }
+          const parsed = JSON.parse(jsonText);
+          if (parsed && parsed.curation) {
+            console.log("[ContentZone] Parsed JSON from content text field");
+            setContentZoneContent(parsed);
+            return;
+          }
+        } catch (e) {
+          console.error("[ContentZone] Failed to parse JSON from text:", e);
+        }
+      }
+      setContentZoneContent(content);
+    }
   };
   const handleListConversationEntries = (event) => {
     const entries = event.detail.entries;
@@ -18948,7 +20493,82 @@ const ContentZone = ({ show }) => {
       }
     }
   };
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: show && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$9.contentZoneContainer, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$9.contentZoneContent, children: contentZoneContent2 ? (() => {
+  reactExports.useEffect(() => {
+    const handleMessageSent = (event) => {
+      var _a, _b, _c;
+      const entry = window.AdaptiveWebsite.util.parseEntryPayload(event.detail.conversationEntry);
+      if (window.AdaptiveWebsite.util.isConversationEntryStaticContentMessage(entry) && !window.AdaptiveWebsite.util.isMessageFromEndUser(entry)) {
+        const payload = getMessagePayloadFromConversationEntry(entry);
+        if (payload) {
+          console.log("[ContentZone] Message payload extracted:", payload);
+          let contentToUse = payload;
+          if (payload.text && !payload.curation && payload.text.includes("```json")) {
+            try {
+              let jsonText = payload.text.trim();
+              if (jsonText.startsWith("```json")) {
+                jsonText = jsonText.replace(/^```json\s*/, "").replace(/\s*```$/, "").trim();
+              } else if (jsonText.startsWith("```")) {
+                jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
+              }
+              const parsed = JSON.parse(jsonText);
+              if (parsed && parsed.curation) {
+                console.log("[ContentZone] Parsed JSON from payload text field");
+                contentToUse = parsed;
+              }
+            } catch (e) {
+              console.error("[ContentZone] Failed to parse JSON from payload text:", e);
+            }
+          }
+          const curation = contentToUse.curation;
+          if (Array.isArray(curation) && curation.length > 0 && "personalizations" in curation[0]) {
+            const firstItem = curation[0];
+            if (Array.isArray(firstItem.personalizations) && firstItem.personalizations.length > 0) {
+              const personalization = firstItem.personalizations[0];
+              console.log("[ContentZone] Personalization found:", personalization.PersonalizationPointName);
+              if (personalization.PersonalizationPointName === "TMG_Project_Overview") {
+                console.log("[ContentZone] Setting ProjectOverview content");
+                setContentZoneContent(contentToUse);
+                return;
+              }
+              if (personalization.PersonalizationPointName === "Schedule_Appointment") {
+                console.log("[ContentZone] Setting ScheduleAppointment content");
+                setContentZoneContent(contentToUse);
+                return;
+              }
+            }
+          }
+          if (contentToUse.curation) {
+            console.log("[ContentZone] Setting content with curation");
+            setContentZoneContent(contentToUse);
+          }
+        } else {
+          const text = (_c = (_b = (_a = entry.entryPayload) == null ? void 0 : _a.abstractMessage) == null ? void 0 : _b.staticContent) == null ? void 0 : _c.text;
+          if (text && typeof text === "string") {
+            try {
+              let jsonText = text.trim();
+              if (jsonText.startsWith("```json")) {
+                jsonText = jsonText.replace(/^```json\s*/, "").replace(/\s*```$/, "").trim();
+              } else if (jsonText.startsWith("```")) {
+                jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
+              }
+              const parsed = JSON.parse(jsonText);
+              if (parsed && parsed.curation) {
+                console.log("[ContentZone] Parsed JSON from text field");
+                setContentZoneContent(parsed);
+              }
+            } catch (e) {
+              console.error("[ContentZone] Failed to parse JSON from text:", e);
+            }
+          }
+        }
+      }
+    };
+    window.addEventListener(window.AdaptiveWebsite.Events.ON_EMBEDDED_MESSAGE_SENT, handleMessageSent);
+    return () => {
+      window.removeEventListener(window.AdaptiveWebsite.Events.ON_EMBEDDED_MESSAGE_SENT, handleMessageSent);
+    };
+  }, []);
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: show && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$b.contentZoneContainer, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$b.contentZoneContent, children: contentZoneContent2 ? (() => {
     const template = contentZoneContent2.template;
     if (template && Array.isArray(template) && template.length > 0) {
       const firstTemplate = template[0];
@@ -18967,10 +20587,48 @@ const ContentZone = ({ show }) => {
             onBack: handlePropertyDetailsBack
           }
         );
+      } else if (templateName === "ProjectOverview" || templateName === "TMG_Project_Overview") {
+        return /* @__PURE__ */ jsxRuntimeExports.jsx(
+          ProjectOverview$2,
+          {
+            content: contentZoneContent2,
+            onBack: handlePropertyDetailsBack
+          }
+        );
+      } else if (templateName === "ScheduleAppointment" || templateName === "Schedule_Appointment") {
+        return /* @__PURE__ */ jsxRuntimeExports.jsx(
+          ScheduleAppointment$2,
+          {
+            content: contentZoneContent2,
+            onBack: handlePropertyDetailsBack
+          }
+        );
       }
     }
     const curation = contentZoneContent2.curation;
     if (Array.isArray(curation) && curation.length > 0 && "personalizations" in curation[0]) {
+      const firstItem = curation[0];
+      if (Array.isArray(firstItem.personalizations) && firstItem.personalizations.length > 0) {
+        const personalization = firstItem.personalizations[0];
+        if (personalization.PersonalizationPointName === "TMG_Project_Overview") {
+          return /* @__PURE__ */ jsxRuntimeExports.jsx(
+            ProjectOverview$2,
+            {
+              content: contentZoneContent2,
+              onBack: handlePropertyDetailsBack
+            }
+          );
+        }
+        if (personalization.PersonalizationPointName === "Schedule_Appointment") {
+          return /* @__PURE__ */ jsxRuntimeExports.jsx(
+            ScheduleAppointment$2,
+            {
+              content: contentZoneContent2,
+              onBack: handlePropertyDetailsBack
+            }
+          );
+        }
+      }
       return /* @__PURE__ */ jsxRuntimeExports.jsx(Recs$2, { content: contentZoneContent2 });
     }
     if (curation && typeof curation === "object" && "property" in curation) {
@@ -18986,17 +20644,17 @@ const ContentZone = ({ show }) => {
   })() : /* @__PURE__ */ jsxRuntimeExports.jsx(Placeholder, {}) }) }) });
 };
 const Placeholder = () => {
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$9.blankContent, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$9.typingIndicator, children: [
+  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$b.blankContent, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$b.typingIndicator, children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx("span", {}),
     /* @__PURE__ */ jsxRuntimeExports.jsx("span", {}),
     /* @__PURE__ */ jsxRuntimeExports.jsx("span", {})
   ] }) });
 };
-const headerContainer = "_headerContainer_1983q_1";
-const agentName = "_agentName_1983q_11";
-const endConversationButton = "_endConversationButton_1983q_19";
-const minimizeButton = "_minimizeButton_1983q_38";
-const styles$8 = {
+const headerContainer = "_headerContainer_1w65b_1";
+const agentName = "_agentName_1w65b_13";
+const endConversationButton = "_endConversationButton_1w65b_22";
+const minimizeButton = "_minimizeButton_1w65b_41";
+const styles$a = {
   headerContainer,
   agentName,
   endConversationButton,
@@ -19007,13 +20665,27 @@ const Header = ({ show }) => {
   if (!show) {
     return null;
   }
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$8.headerContainer, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$8.agentName, children: /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { children: AGENT_NAME }) }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: styles$8.endConversationButton, onClick: window.AdaptiveWebsite.endConversation, children: "End Conversation" }),
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$a.headerContainer, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$a.agentName, children: /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { children: AGENT_NAME }) }),
     /* @__PURE__ */ jsxRuntimeExports.jsx(
       "button",
       {
-        className: styles$8.minimizeButton,
+        className: styles$a.endConversationButton,
+        onClick: () => {
+          var _a;
+          if (typeof ((_a = window.AdaptiveWebsite) == null ? void 0 : _a.endConversation) === "function") {
+            window.AdaptiveWebsite.endConversation().catch((err) => {
+              console.error("[Adaptive Web Agent] Error ending conversation:", err);
+            });
+          }
+        },
+        children: "End Conversation"
+      }
+    ),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "button",
+      {
+        className: styles$a.minimizeButton,
         onClick: window.AdaptiveWebsite.minimize,
         "aria-label": "Minimize content zone",
         children: /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -19040,15 +20712,15 @@ const Header = ({ show }) => {
     )
   ] });
 };
-const searchContainer = "_searchContainer_lpcxl_1";
-const searchForm = "_searchForm_lpcxl_12";
-const searchBar = "_searchBar_lpcxl_21";
-const searchInput = "_searchInput_lpcxl_34";
-const searchActions = "_searchActions_lpcxl_50";
-const searchActionButton = "_searchActionButton_lpcxl_57";
-const searchIcon = "_searchIcon_lpcxl_73";
-const expandButton = "_expandButton_lpcxl_90";
-const styles$7 = {
+const searchContainer = "_searchContainer_jta2q_1";
+const searchForm = "_searchForm_jta2q_14";
+const searchBar = "_searchBar_jta2q_23";
+const searchInput = "_searchInput_jta2q_37";
+const searchActions = "_searchActions_jta2q_56";
+const searchActionButton = "_searchActionButton_jta2q_63";
+const searchIcon = "_searchIcon_jta2q_84";
+const expandButton = "_expandButton_jta2q_102";
+const styles$9 = {
   searchContainer,
   searchForm,
   searchBar,
@@ -19061,11 +20733,10 @@ const styles$7 = {
 const SearchBar = ({ show, onInitialMessage }) => {
   const [searchText, setSearchText] = reactExports.useState("");
   const [hasSentInitialMessage, setHasSentInitialMessage] = reactExports.useState(false);
-  const AGENT_LOGO_IMAGE_URL = "https://zzpq-010.dx.commercecloud.salesforce.com/on/demandware.static/Sites-nto-Site/-/default/dw9814f411/images/favicons/favicon-32x32.png";
+  const AGENT_LOGO_IMAGE_URL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAfCAMAAACxiD++AAAAwFBMVEX////69/S0gkT8+vfp4detil66jE39+/i0jmTw6N7HoGvAlVTQqXrWto3v5NfKnFz07OHXtH/Vv6nYwafQroLOqXbOt6Lx59rJqX7FnV/Xwqbf0L738Ofgy7Do2sv69/XFonLFoX39/Pu5jkbQrYPRpmbUrm63lGTEnG3ky6vNoVzm0bW3jVTLoWvQqG/FmWDTpmbm18C2k1vgu4fayLLXsHno2cHSs5Lw48/OsY3nzKXfxZ3gwpbh08jl0rOzhE2wNL0jAAAB3UlEQVR4AX2ShZbrIBRFb0peGdKGuEOaUs3E6i7//1cvjPuOAnsdFD6hdJD6D/5A6WL1Af4AdRHR/hR6mPThV3SKDWRaYDvwM24rYNMD/0eBBhBSHGHigRNDwr4JPIYwxZ1B4ILjQJb+JAxV3H0ag/+LoFMxGhDv94QxFRNM+3IM7ndB1lIxxcFMJvR/FHSKOojMIY5/6SKkIkLqDOJ2DPS7kMsxPCI6B+7A/HtCweVSj5A6l2Gzz4IQAjgHl6JIqFkryARZ+QIrtaqumsoIsIHkOvSasiyb0oU3Q2FKkStM4CkmLiiMZUn7Ul6bTZMwlhcAgBdyqVseloyYRH1W9Eab1VXNAQAZL4K70sqyapY/HDlzDZ9hKaROCjRgfLNBBibbHedFzAvubDjnApI92HsOOT9Mj3vxKEh9Op9Px/153z5HA0F6MdtBknNeWMw8jIJlJssSsyVCQK2tlmmatV57nmcZVWVpnrZazVcrTWtqbQDvmAXg3svSfhwkBYCU7wJW5EvcK3ZFQUnTjnOTIL7hAtI9AIS6VRzWp62o8yJ3Y7aNHccNlY7fUSAdqymdXW+n23o3PUwPAc31pRdQyufJPb0rQMdh6Gb0cJHop4u1vujueHxuq8NhOET/Ad3ZN4ZojN2aAAAAAElFTkSuQmCC";
   const searchActions2 = [
-    { text: "Shop Hiking Boots", value: "Shop Hiking Boots" },
-    { text: "Find Jackets", value: "Find Jackets" },
-    { text: "Browse Backpacks", value: "Browse Backpacks" }
+    { text: "2 Bedroom Apartments in New Cairo", value: "2 Bedroom Apartments in New Cairo" },
+    { text: "Villa in Madinaty", value: "Villa in Madinaty" }
   ];
   const handleSearch = (e) => {
     var _a, _b;
@@ -19080,9 +20751,9 @@ const SearchBar = ({ show, onInitialMessage }) => {
     }
     window.AdaptiveWebsite.maximize();
   };
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: show && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$7.searchContainer, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("form", { onSubmit: handleSearch, className: styles$7.searchForm, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$7.searchBar, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$7.searchIcon, children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: AGENT_LOGO_IMAGE_URL, alt: "Search" }) }),
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: show && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$9.searchContainer, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx("form", { onSubmit: handleSearch, className: styles$9.searchForm, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$9.searchBar, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$9.searchIcon, children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: AGENT_LOGO_IMAGE_URL, alt: "Search" }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(
         "input",
         {
@@ -19091,15 +20762,15 @@ const SearchBar = ({ show, onInitialMessage }) => {
           value: searchText,
           onChange: (e) => setSearchText(e.target.value),
           placeholder: "Welcome! How can I help you today?",
-          className: styles$7.searchInput
+          className: styles$9.searchInput
         }
       ),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$7.searchActions, children: searchActions2.map((action, index) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$9.searchActions, children: searchActions2.map((action, index) => /* @__PURE__ */ jsxRuntimeExports.jsx(
         "button",
         {
           type: "submit",
           name: "buttonText",
-          className: styles$7.searchActionButton,
+          className: styles$9.searchActionButton,
           value: action.value,
           children: action.text
         },
@@ -19114,7 +20785,7 @@ const SearchBar = ({ show, onInitialMessage }) => {
         height: "18",
         viewBox: "0 0 18 18",
         fill: "none",
-        className: styles$7.expandButton,
+        className: styles$9.expandButton,
         onClick: window.AdaptiveWebsite.maximize,
         children: /* @__PURE__ */ jsxRuntimeExports.jsx(
           "path",
@@ -19159,7 +20830,9 @@ const engagementEvents = [
     customDomEventName: window.AdaptiveWebsite.Events.ON_EMBEDDED_MESSAGING_CONVERSATION_CLOSED,
     interactionName: "agent-conversation-closed",
     getAttributes: (e) => {
-      return { conversationId: e.detail.conversationId };
+      var _a;
+      const conversationId = (_a = e == null ? void 0 : e.detail) == null ? void 0 : _a.conversationId;
+      return conversationId ? { conversationId } : {};
     }
   },
   {
@@ -19220,7 +20893,8 @@ function App() {
     }
   };
   const handleConversationClosed = () => {
-    setIsReady(false);
+    setShowChatBot(false);
+    setConversationMessages([]);
   };
   const handleMessageReceived = (event) => {
     setConversationMessages((prev) => [...prev, window.AdaptiveWebsite.util.parseEntryPayload(event.detail.conversationEntry)]);
@@ -19249,6 +20923,21 @@ function App() {
     }
     return preChatData;
   };
+  reactExports.useEffect(() => {
+    const link1 = document.createElement("link");
+    link1.rel = "preconnect";
+    link1.href = "https://fonts.googleapis.com";
+    document.head.appendChild(link1);
+    const link2 = document.createElement("link");
+    link2.rel = "preconnect";
+    link2.href = "https://fonts.gstatic.com";
+    link2.crossOrigin = "anonymous";
+    document.head.appendChild(link2);
+    const link3 = document.createElement("link");
+    link3.href = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Outfit:wght@200;300;400;500;600&display=swap";
+    link3.rel = "stylesheet";
+    document.head.appendChild(link3);
+  }, []);
   reactExports.useEffect(() => {
     window.addEventListener(window.AdaptiveWebsite.Events.ON_EMBEDDED_MESSAGE_SENT, handleMessageReceived);
     window.addEventListener(window.AdaptiveWebsite.Events.ON_EMBEDDED_MESSAGING_LIST_CONVERSATION_ENTRIES, handleListConversationEntries);
@@ -19312,16 +21001,16 @@ if (!appendToBody()) {
     subtree: true
   });
 }
-const recsTemplate = "_recsTemplate_1am4o_1";
-const recsBanner = "_recsBanner_1am4o_9";
-const recsBannerOverlay = "_recsBannerOverlay_1am4o_23";
-const recsBannerTitle = "_recsBannerTitle_1am4o_33";
-const recsBannerOptions = "_recsBannerOptions_1am4o_43";
-const recsBannerOption = "_recsBannerOption_1am4o_43";
-const recsProductsGrid = "_recsProductsGrid_1am4o_59";
-const compareButtonContainer = "_compareButtonContainer_1am4o_66";
-const compareButton = "_compareButton_1am4o_66";
-const styles$6 = {
+const recsTemplate = "_recsTemplate_um4kb_1";
+const recsBanner = "_recsBanner_um4kb_20";
+const recsBannerOverlay = "_recsBannerOverlay_um4kb_39";
+const recsBannerTitle = "_recsBannerTitle_um4kb_49";
+const recsBannerOptions = "_recsBannerOptions_um4kb_59";
+const recsBannerOption = "_recsBannerOption_um4kb_59";
+const recsProductsGrid = "_recsProductsGrid_um4kb_84";
+const compareButtonContainer = "_compareButtonContainer_um4kb_103";
+const compareButton = "_compareButton_um4kb_103";
+const styles$8 = {
   recsTemplate,
   recsBanner,
   recsBannerOverlay,
@@ -19339,7 +21028,7 @@ const productImageContainer$1 = "_productImageContainer_1oysg_54";
 const productName$1 = "_productName_1oysg_71";
 const productPrice$1 = "_productPrice_1oysg_83";
 const productCompare = "_productCompare_1oysg_91";
-const styles$5 = {
+const styles$7 = {
   productLink,
   productCard,
   productFavorite,
@@ -19357,7 +21046,7 @@ const starHalf = "_starHalf_12zy1_36";
 const starHalfFilled = "_starHalfFilled_12zy1_52";
 const starHalfEmpty = "_starHalfEmpty_12zy1_70";
 const starEmpty = "_starEmpty_12zy1_88";
-const styles$4 = {
+const styles$6 = {
   productRating,
   small,
   large,
@@ -19372,14 +21061,14 @@ const ProductStars = ({ rating, size = "small" }) => {
   const fullStars = Math.floor(rating);
   const hasHalfStar = rating % 1 >= 0.5;
   const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-  const sizeClass = size === "large" ? styles$4.large : styles$4.small;
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `${styles$4.productRating} ${sizeClass}`, children: [
-    [...Array(fullStars)].map((_, i) => /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: `${styles$4.star} ${styles$4.starFull}`, children: "★" }, `full-${i}`)),
-    hasHalfStar && /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `${styles$4.star} ${styles$4.starHalf}`, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$4.starHalfFilled, children: "★" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$4.starHalfEmpty, children: "★" })
+  const sizeClass = size === "large" ? styles$6.large : styles$6.small;
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `${styles$6.productRating} ${sizeClass}`, children: [
+    [...Array(fullStars)].map((_, i) => /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: `${styles$6.star} ${styles$6.starFull}`, children: "★" }, `full-${i}`)),
+    hasHalfStar && /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `${styles$6.star} ${styles$6.starHalf}`, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$6.starHalfFilled, children: "★" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$6.starHalfEmpty, children: "★" })
     ] }),
-    [...Array(emptyStars)].map((_, i) => /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: `${styles$4.star} ${styles$4.starEmpty}`, children: "★" }, `empty-${i}`))
+    [...Array(emptyStars)].map((_, i) => /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: `${styles$6.star} ${styles$6.starEmpty}`, children: "★" }, `empty-${i}`))
   ] });
 };
 const ProductCard = ({
@@ -19395,14 +21084,14 @@ const ProductCard = ({
     "a",
     {
       href: "#",
-      className: styles$5.productLink,
-      children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$5.productCard, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$5.productFavorite, onClick: handleFavoriteClick, children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" }) }) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$5.productImageContainer, children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: product.image, alt: product.name }) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$5.productName, children: product.name }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$5.productPrice, children: product.price }),
+      className: styles$7.productLink,
+      children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$7.productCard, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$7.productFavorite, onClick: handleFavoriteClick, children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" }) }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$7.productImageContainer, children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: product.image, alt: product.name }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$7.productName, children: product.name }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$7.productPrice, children: product.price }),
         product.rating && /* @__PURE__ */ jsxRuntimeExports.jsx(ProductStars, { rating: product.rating, size: "small" }),
-        showCompare && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$5.productCompare, children: [
+        showCompare && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$7.productCompare, children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(
             "input",
             {
@@ -19418,31 +21107,63 @@ const ProductCard = ({
     }
   );
 };
-const propertyCardWrapper = "_propertyCardWrapper_i699b_1";
-const propertyImageLink = "_propertyImageLink_i699b_6";
-const propertyCard = "_propertyCard_i699b_1";
-const propertyBadge$1 = "_propertyBadge_i699b_25";
-const propertyImageContainer$1 = "_propertyImageContainer_i699b_40";
-const propertyInfo = "_propertyInfo_i699b_56";
-const propertyName$1 = "_propertyName_i699b_63";
-const propertyPrice$1 = "_propertyPrice_i699b_71";
-const propertyDescription = "_propertyDescription_i699b_77";
-const viewMoreButton = "_viewMoreButton_i699b_84";
-const styles$3 = {
+const propertyCardWrapper = "_propertyCardWrapper_1jp9m_1";
+const propertyCard = "_propertyCard_1jp9m_1";
+const propertyImageWrapper = "_propertyImageWrapper_1jp9m_28";
+const propertyImage = "_propertyImage_1jp9m_6";
+const propertyBadge$1 = "_propertyBadge_1jp9m_46";
+const propertyCommunity = "_propertyCommunity_1jp9m_61";
+const propertyBody = "_propertyBody_1jp9m_76";
+const propertyName$1 = "_propertyName_1jp9m_84";
+const propertyPrice$1 = "_propertyPrice_1jp9m_93";
+const propertySpecs = "_propertySpecs_1jp9m_101";
+const propertySpec = "_propertySpec_1jp9m_101";
+const propertySeparator = "_propertySeparator_1jp9m_127";
+const propertyDetails = "_propertyDetails_1jp9m_135";
+const propertyDetailItem = "_propertyDetailItem_1jp9m_146";
+const propertyDetailDot = "_propertyDetailDot_1jp9m_152";
+const viewMoreButton = "_viewMoreButton_1jp9m_169";
+const styles$5 = {
   propertyCardWrapper,
-  propertyImageLink,
   propertyCard,
+  propertyImageWrapper,
+  propertyImage,
   propertyBadge: propertyBadge$1,
-  propertyImageContainer: propertyImageContainer$1,
-  propertyInfo,
+  propertyCommunity,
+  propertyBody,
   propertyName: propertyName$1,
   propertyPrice: propertyPrice$1,
-  propertyDescription,
+  propertySpecs,
+  propertySpec,
+  propertySeparator,
+  propertyDetails,
+  propertyDetailItem,
+  propertyDetailDot,
   viewMoreButton
 };
 const PropertyCard = ({ property, onViewMore }) => {
   const formattedPrice = property.price != null && property.currency ? `${property.price.toLocaleString()} ${property.currency}` : property.price != null ? property.price.toLocaleString() : void 0;
   const href = property.productUrl || "#";
+  const community = property.category1 || property.category2 || property.category3;
+  const parseSpecsFromDescription = (desc) => {
+    const bedroomsMatch = desc.match(/(\d+)\s*(?:bed|bedroom|bedrooms)/i);
+    const bathroomsMatch = desc.match(/(\d+)\s*(?:bath|bathroom|bathrooms)/i);
+    const areaMatch = desc.match(/(\d+)\s*(?:sqm|sq\.?\s*m|square\s*meters?)/i);
+    return {
+      bedrooms: bedroomsMatch ? bedroomsMatch[1] : null,
+      bathrooms: bathroomsMatch ? bathroomsMatch[1] : null,
+      area: areaMatch ? areaMatch[1] : null
+    };
+  };
+  const specs = property.description && (!property.bedrooms && !property.bathrooms && !property.area) ? parseSpecsFromDescription(property.description) : {
+    bedrooms: property.bedrooms,
+    bathrooms: property.bathrooms,
+    area: property.area
+  };
+  const details = property.description ? property.description.split(",").map((d) => d.trim()).filter((d) => {
+    const lower = d.toLowerCase();
+    return !lower.match(/(\d+\s*(?:bed|bath|sqm|bedroom|bathroom|square))/);
+  }).filter((d) => d.length > 0) : [];
   const handleViewMore = (e) => {
     e.preventDefault();
     if (onViewMore) {
@@ -19451,26 +21172,61 @@ const PropertyCard = ({ property, onViewMore }) => {
       window.open(href, "_blank", "noopener,noreferrer");
     }
   };
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$3.propertyCardWrapper, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$3.propertyCard, children: [
-    property.productLabel && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$3.propertyBadge, children: property.productLabel }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href, className: styles$3.propertyImageLink, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$3.propertyImageContainer, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-      "img",
-      {
-        src: property.Image || "",
-        alt: property.imageAlt || property.name
-      }
-    ) }) }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$3.propertyInfo, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: styles$3.propertyName, children: property.name }),
-      formattedPrice && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$3.propertyPrice, children: formattedPrice }),
-      property.description && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: styles$3.propertyDescription, children: property.description }),
+  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$5.propertyCardWrapper, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$5.propertyCard, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$5.propertyImageWrapper, children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "img",
+        {
+          className: styles$5.propertyImage,
+          src: property.Image || "",
+          alt: property.imageAlt || property.name
+        }
+      ),
+      property.productLabel && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$5.propertyBadge, children: property.productLabel }),
+      community && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$5.propertyCommunity, children: community })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$5.propertyBody, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$5.propertyName, children: property.name }),
+      formattedPrice && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$5.propertyPrice, children: formattedPrice }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$5.propertySpecs, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: styles$5.propertySpec, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.5", xmlns: "http://www.w3.org/2000/svg", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M3 21V7l9-4 9 4v14" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M9 21V11h6v10" })
+          ] }),
+          "2 Bed"
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: styles$5.propertySpec, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.5", xmlns: "http://www.w3.org/2000/svg", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M4 12h16M4 12v6a2 2 0 002 2h12a2 2 0 002-2v-6M6 12V5a2 2 0 012-2h1" }) }),
+          "2 Bath"
+        ] }),
+        specs.area && /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: styles$5.propertySpec, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.5", xmlns: "http://www.w3.org/2000/svg", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("rect", { x: "3", y: "3", width: "18", height: "18", rx: "2" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M3 9h18M9 3v18" })
+          ] }),
+          specs.area,
+          " ",
+          property.areaUnit || "sqm"
+        ] })
+      ] }),
+      details.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$5.propertySeparator }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$5.propertyDetails, children: details.map((detail, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: styles$5.propertyDetailItem, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$5.propertyDetailDot }),
+          detail
+        ] }, index)) })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(
         "button",
         {
           type: "button",
-          className: styles$3.viewMoreButton,
+          className: styles$5.viewMoreButton,
           onClick: handleViewMore,
-          children: "View more information"
+          children: [
+            "View more Information",
+            /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M5 12h14M13 6l6 6-6 6" }) })
+          ]
         }
       )
     ] })
@@ -19509,16 +21265,16 @@ const Recs = ({ content }) => {
     return compareCheckboxesSelected.length >= MAX_COMPARE_PRODUCTS && !compareCheckboxesSelected.includes(id);
   };
   const REAL_ESTATE_BANNER_IMAGE = "https://images.unsplash.com/photo-1565402170291-8491f14678db?q=80&w=1117&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$6.recsTemplate, children: [
-    bannerImage && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$6.recsBanner, children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: bannerImage, alt: "Banner" }) }),
-    isRealEstate && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$6.recsBanner, children: [
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$8.recsTemplate, children: [
+    bannerImage && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$8.recsBanner, children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: bannerImage, alt: "Banner" }) }),
+    isRealEstate && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$8.recsBanner, children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: REAL_ESTATE_BANNER_IMAGE, alt: "Property recommendations" }),
-      options.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$6.recsBannerOverlay, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: styles$6.recsBannerTitle, children: "Available in these communities" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$6.recsBannerOptions, children: options.map((opt) => /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$6.recsBannerOption, children: opt.name }, opt.name)) })
+      options.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$8.recsBannerOverlay, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: styles$8.recsBannerTitle, children: "Available in These Communities" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$8.recsBannerOptions, children: options.map((opt) => /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$8.recsBannerOption, children: opt.name }, opt.name)) })
       ] })
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$6.recsProductsGrid, children: isRealEstate ? properties.map((property) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$8.recsProductsGrid, children: isRealEstate ? properties.map((property) => /* @__PURE__ */ jsxRuntimeExports.jsx(
       PropertyCard,
       {
         property,
@@ -19535,7 +21291,7 @@ const Recs = ({ content }) => {
       },
       product.id
     )) }),
-    !isRealEstate && compareCheckboxesSelected.length >= MAX_COMPARE_PRODUCTS && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$6.compareButtonContainer, children: /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: styles$6.compareButton, onClick: handleCompareProducts, children: "Compare Products" }) })
+    !isRealEstate && compareCheckboxesSelected.length >= MAX_COMPARE_PRODUCTS && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$8.compareButtonContainer, children: /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: styles$8.compareButton, onClick: handleCompareProducts, children: "Compare Products" }) })
   ] });
 };
 const Recs$1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
@@ -19549,7 +21305,7 @@ const featuresSection$1 = "_featuresSection_1nvy2_21";
 const featureRow = "_featureRow_1nvy2_28";
 const featureName$1 = "_featureName_1nvy2_37";
 const featureValue$1 = "_featureValue_1nvy2_46";
-const styles$2 = {
+const styles$4 = {
   comparisonTemplate,
   comparisonGrid,
   comparisonColumn,
@@ -19578,11 +21334,11 @@ const Comparison = ({ content }) => {
     const feature = (_a = product.features) == null ? void 0 : _a.find((f) => f.name === featureName2);
     return (feature == null ? void 0 : feature.value) || "—";
   };
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$2.comparisonTemplate, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$2.comparisonGrid, children: displayProducts.map((product) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$2.comparisonColumn, children: [
+  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$4.comparisonTemplate, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$4.comparisonGrid, children: displayProducts.map((product) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$4.comparisonColumn, children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(ProductCard, { product }),
-    allFeatures.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$2.featuresSection, children: allFeatures.map((featureName2, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$2.featureRow, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$2.featureName, children: featureName2 }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$2.featureValue, children: getFeatureValue(product, featureName2) })
+    allFeatures.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$4.featuresSection, children: allFeatures.map((featureName2, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$4.featureRow, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$4.featureName, children: featureName2 }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$4.featureValue, children: getFeatureValue(product, featureName2) })
     ] }, index)) })
   ] }, product.id)) }) });
 };
@@ -19607,7 +21363,7 @@ const featuresList = "_featuresList_19kxk_149";
 const featureItem = "_featureItem_19kxk_158";
 const featureName = "_featureName_19kxk_165";
 const featureValue = "_featureValue_19kxk_170";
-const styles$1 = {
+const styles$3 = {
   productDetailsTemplate,
   productDetailsContainer,
   productImageSection,
@@ -19638,21 +21394,21 @@ const ProductDetails = ({ content }) => {
   const handleFavoriteClick = () => {
     logger.debug("Favorite clicked for product:", product.id);
   };
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.productDetailsTemplate, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.productDetailsContainer, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.productImageSection, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.productImageContainer, children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: product.image, alt: product.name }) }) }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.productInfoSection, children: [
-      product.itemNumber && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.itemNumber, children: [
+  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$3.productDetailsTemplate, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$3.productDetailsContainer, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$3.productImageSection, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$3.productImageContainer, children: /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: product.image, alt: product.name }) }) }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$3.productInfoSection, children: [
+      product.itemNumber && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$3.itemNumber, children: [
         "ITEM NO.: ",
         product.itemNumber
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: styles$1.productName, children: product.name }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.productPrice, children: product.price }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: styles$3.productName, children: product.name }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$3.productPrice, children: product.price }),
       product.rating && /* @__PURE__ */ jsxRuntimeExports.jsx(ProductStars, { rating: product.rating, size: "large" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.actionButtons, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$3.actionButtons, children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs(
           "button",
           {
-            className: styles$1.addToCartButton,
+            className: styles$3.addToCartButton,
             onClick: handleAddToCart,
             children: [
               /* @__PURE__ */ jsxRuntimeExports.jsxs("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", children: [
@@ -19667,20 +21423,20 @@ const ProductDetails = ({ content }) => {
         /* @__PURE__ */ jsxRuntimeExports.jsx(
           "button",
           {
-            className: styles$1.favoriteButton,
+            className: styles$3.favoriteButton,
             onClick: handleFavoriteClick,
             children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" }) })
           }
         )
       ] }),
-      product.features && product.features.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.featuresSection, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: styles$1.featuresTitle, children: "FEATURES" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: styles$1.featuresList, children: product.features.map((feature, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("li", { className: styles$1.featureItem, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: styles$1.featureName, children: [
+      product.features && product.features.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$3.featuresSection, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: styles$3.featuresTitle, children: "FEATURES" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: styles$3.featuresList, children: product.features.map((feature, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("li", { className: styles$3.featureItem, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: styles$3.featureName, children: [
             feature.name,
             ":"
           ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$1.featureValue, children: feature.value })
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$3.featureValue, children: feature.value })
         ] }, index)) })
       ] })
     ] })
@@ -19711,7 +21467,7 @@ const sectionTitle = "_sectionTitle_1r7ri_181";
 const longDescriptionContent = "_longDescriptionContent_1r7ri_190";
 const longDescriptionParagraph = "_longDescriptionParagraph_1r7ri_196";
 const staticNote = "_staticNote_1r7ri_204";
-const mapContainer = "_mapContainer_1r7ri_212";
+const mapContainer$1 = "_mapContainer_1r7ri_212";
 const mapIframe = "_mapIframe_1r7ri_219";
 const locationSection = "_locationSection_1r7ri_223";
 const locationAddress = "_locationAddress_1r7ri_230";
@@ -19722,7 +21478,7 @@ const amenitiesList = "_amenitiesList_1r7ri_265";
 const amenityChip = "_amenityChip_1r7ri_272";
 const paymentPlanTableWrapper = "_paymentPlanTableWrapper_1r7ri_284";
 const paymentPlanTable = "_paymentPlanTable_1r7ri_284";
-const styles = {
+const styles$2 = {
   propertyDetailsTemplate,
   backButton,
   propertyDetailsContainer,
@@ -19744,7 +21500,7 @@ const styles = {
   longDescriptionContent,
   longDescriptionParagraph,
   staticNote,
-  mapContainer,
+  mapContainer: mapContainer$1,
   mapIframe,
   locationSection,
   locationAddress,
@@ -19797,30 +21553,30 @@ const PropertyDetails = ({ content, onBack }) => {
   };
   const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${STATIC_LOCATION.lng - 0.02},${STATIC_LOCATION.lat - 0.02},${STATIC_LOCATION.lng + 0.02},${STATIC_LOCATION.lat + 0.02}&layer=mapnik`;
   const mapsSearchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(STATIC_LOCATION.address)}`;
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.propertyDetailsTemplate, children: [
-    onBack && /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "button", className: styles.backButton, onClick: onBack, children: "← Back to recommendations" }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.propertyDetailsContainer, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.propertyImageSection, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.propertyImageContainer, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$2.propertyDetailsTemplate, children: [
+    onBack && /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "button", className: styles$2.backButton, onClick: onBack, children: "← Back to recommendations" }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$2.propertyDetailsContainer, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$2.propertyImageSection, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$2.propertyImageContainer, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
           "img",
           {
             src: property.Image || "",
             alt: property.imageAlt || property.name
           }
         ) }),
-        property.productLabel && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles.propertyBadge, children: property.productLabel })
+        property.productLabel && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$2.propertyBadge, children: property.productLabel })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.propertyInfoSection, children: [
-        property.category3 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.propertyCategory, children: property.category3 }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: styles.propertyName, children: property.name }),
-        formattedPrice && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.propertyPrice, children: formattedPrice }),
-        property.description && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: styles.propertyShortDescription, children: property.description }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.actionButtons, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$2.propertyInfoSection, children: [
+        property.category3 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$2.propertyCategory, children: property.category3 }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: styles$2.propertyName, children: property.name }),
+        formattedPrice && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$2.propertyPrice, children: formattedPrice }),
+        property.description && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: styles$2.propertyShortDescription, children: property.description }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$2.actionButtons, children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(
             "button",
             {
               type: "button",
-              className: styles.viewOnSiteButton,
+              className: styles$2.viewOnSiteButton,
               onClick: handleViewOnSite,
               disabled: !property.productUrl,
               children: "View on website"
@@ -19830,10 +21586,10 @@ const PropertyDetails = ({ content, onBack }) => {
             "button",
             {
               type: "button",
-              className: styles.scheduleConsultationButton,
+              className: styles$2.scheduleConsultationButton,
               onClick: handleScheduleConsultation,
               children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles.scheduleIcon, children: "📅" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$2.scheduleIcon, children: "📅" }),
                 "Schedule consultation"
               ]
             }
@@ -19841,19 +21597,19 @@ const PropertyDetails = ({ content, onBack }) => {
         ] })
       ] })
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.pageSections, children: [
-      property.longDescription && /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: styles.pageSection, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: styles.sectionTitle, children: "Property Highlights" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.longDescriptionContent, children: property.longDescription.split("\n").map((line, i) => /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: styles.longDescriptionParagraph, children: line }, i)) })
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$2.pageSections, children: [
+      property.longDescription && /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: styles$2.pageSection, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: styles$2.sectionTitle, children: "Property Highlights" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$2.longDescriptionContent, children: property.longDescription.split("\n").map((line, i) => /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: styles$2.longDescriptionParagraph, children: line }, i)) })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: styles.pageSection, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: styles.sectionTitle, children: "Location" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.mapContainer, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: styles$2.pageSection, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: styles$2.sectionTitle, children: "Location" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$2.mapContainer, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
           "iframe",
           {
             title: "Property location",
             src: mapUrl,
-            className: styles.mapIframe,
+            className: styles$2.mapIframe,
             width: "100%",
             height: "350",
             style: { border: 0 },
@@ -19862,52 +21618,52 @@ const PropertyDetails = ({ content, onBack }) => {
             referrerPolicy: "no-referrer-when-downgrade"
           }
         ) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.locationSection, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: styles.locationAddress, children: STATIC_LOCATION.address }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$2.locationSection, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: styles$2.locationAddress, children: STATIC_LOCATION.address }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(
             "a",
             {
               href: mapsSearchUrl,
               target: "_blank",
               rel: "noopener noreferrer",
-              className: styles.viewOnMapLink,
+              className: styles$2.viewOnMapLink,
               children: "View on Google Maps →"
             }
           )
         ] })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: styles.pageSection, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: styles.sectionTitle, children: "Unit Layout" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.sectionImageWrapper, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: styles$2.pageSection, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: styles$2.sectionTitle, children: "Unit Layout" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$2.sectionImageWrapper, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
           "img",
           {
             src: STATIC_UNIT_LAYOUT_IMAGE,
             alt: "Unit layout floor plan",
-            className: styles.sectionImage
+            className: styles$2.sectionImage
           }
         ) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: styles.staticNote, children: "Floor plan and unit layout details. Contact us for the actual layout of this property." })
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: styles$2.staticNote, children: "Floor plan and unit layout details. Contact us for the actual layout of this property." })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: styles.pageSection, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: styles.sectionTitle, children: "Project Master Plan" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.sectionImageWrapper, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: styles$2.pageSection, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: styles$2.sectionTitle, children: "Project Master Plan" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$2.sectionImageWrapper, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
           "img",
           {
             src: STATIC_MASTER_PLAN_IMAGE,
             alt: "Project master plan",
-            className: styles.sectionImage
+            className: styles$2.sectionImage
           }
         ) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: styles.staticNote, children: "Project master plan and community layout. Contact us for the full master plan of this development." })
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: styles$2.staticNote, children: "Project master plan and community layout. Contact us for the full master plan of this development." })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: styles.pageSection, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: styles.sectionTitle, children: "Project Amenities" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.amenitiesList, children: STATIC_AMENITIES.map((amenity, i) => /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles.amenityChip, children: amenity }, i)) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: styles.staticNote, children: "Typical project amenities. Actual amenities may vary by development." })
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: styles$2.pageSection, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: styles$2.sectionTitle, children: "Project Amenities" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$2.amenitiesList, children: STATIC_AMENITIES.map((amenity, i) => /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$2.amenityChip, children: amenity }, i)) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: styles$2.staticNote, children: "Typical project amenities. Actual amenities may vary by development." })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: styles.pageSection, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: styles.sectionTitle, children: "Payment Plan" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.paymentPlanTableWrapper, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("table", { className: styles.paymentPlanTable, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: styles$2.pageSection, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: styles$2.sectionTitle, children: "Payment Plan" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$2.paymentPlanTableWrapper, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("table", { className: styles$2.paymentPlanTable, children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("thead", { children: /* @__PURE__ */ jsxRuntimeExports.jsxs("tr", { children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("th", { children: "Phase" }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("th", { children: "Amount" }),
@@ -19921,7 +21677,7 @@ const PropertyDetails = ({ content, onBack }) => {
             /* @__PURE__ */ jsxRuntimeExports.jsx("td", { children: row.duration })
           ] }, i)) })
         ] }) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: styles.staticNote, children: "Sample payment plan structure. Actual terms depend on the specific property and developer. Schedule a consultation for details." })
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: styles$2.staticNote, children: "Sample payment plan structure. Actual terms depend on the specific property and developer. Schedule a consultation for details." })
       ] })
     ] })
   ] });
@@ -19929,6 +21685,784 @@ const PropertyDetails = ({ content, onBack }) => {
 const PropertyDetails$1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: PropertyDetails
+}, Symbol.toStringTag, { value: "Module" }));
+const detailsPanel = "_detailsPanel_ftvpl_4";
+const detailsHero = "_detailsHero_ftvpl_11";
+const detailsHeroOverlay = "_detailsHeroOverlay_ftvpl_24";
+const detailsHeroBack = "_detailsHeroBack_ftvpl_39";
+const detailsHeroBadge = "_detailsHeroBadge_ftvpl_71";
+const detailsHeroDeveloper = "_detailsHeroDeveloper_ftvpl_99";
+const detailsStats = "_detailsStats_ftvpl_113";
+const detailsStat = "_detailsStat_ftvpl_113";
+const detailsStatValue = "_detailsStatValue_ftvpl_135";
+const detailsStatLabel = "_detailsStatLabel_ftvpl_144";
+const ds = "_ds_ftvpl_154";
+const dsLight = "_dsLight_ftvpl_158";
+const dsWhite = "_dsWhite_ftvpl_162";
+const dsDark = "_dsDark_ftvpl_166";
+const dsDarker = "_dsDarker_ftvpl_171";
+const dsLabel = "_dsLabel_ftvpl_176";
+const dsTitle = "_dsTitle_ftvpl_186";
+const dsDesc = "_dsDesc_ftvpl_199";
+const descSection = "_descSection_ftvpl_213";
+const descHighlights = "_descHighlights_ftvpl_220";
+const descHighlight = "_descHighlight_ftvpl_220";
+const descHighlightValue = "_descHighlightValue_ftvpl_239";
+const descHighlightLabel = "_descHighlightLabel_ftvpl_248";
+const unitTypesHeader = "_unitTypesHeader_ftvpl_257";
+const unitTabs = "_unitTabs_ftvpl_264";
+const unitTab = "_unitTab_ftvpl_264";
+const active = "_active_ftvpl_282";
+const unitGrid = "_unitGrid_ftvpl_289";
+const unitCard = "_unitCard_ftvpl_295";
+const unitCardImg = "_unitCardImg_ftvpl_309";
+const unitCardType = "_unitCardType_ftvpl_326";
+const unitCardBody = "_unitCardBody_ftvpl_340";
+const unitCardName = "_unitCardName_ftvpl_344";
+const unitCardSpecs = "_unitCardSpecs_ftvpl_352";
+const unitCardSpec = "_unitCardSpec_ftvpl_352";
+const unitCardArea = "_unitCardArea_ftvpl_374";
+const unitCardAreaVal = "_unitCardAreaVal_ftvpl_382";
+const unitCardDl = "_unitCardDl_ftvpl_388";
+const facilitiesGrid = "_facilitiesGrid_ftvpl_404";
+const facilityItem = "_facilityItem_ftvpl_411";
+const facilityOverlay = "_facilityOverlay_ftvpl_429";
+const facilityName = "_facilityName_ftvpl_444";
+const facilityDesc = "_facilityDesc_ftvpl_452";
+const smartGrid = "_smartGrid_ftvpl_470";
+const smartItem = "_smartItem_ftvpl_478";
+const smartIcon = "_smartIcon_ftvpl_491";
+const amenitiesLayout = "_amenitiesLayout_ftvpl_523";
+const amenityCol = "_amenityCol_ftvpl_530";
+const amenityList = "_amenityList_ftvpl_540";
+const dualSection = "_dualSection_ftvpl_571";
+const finCards = "_finCards_ftvpl_580";
+const finCard = "_finCard_ftvpl_580";
+const finCardIcon = "_finCardIcon_ftvpl_602";
+const finCardLabel = "_finCardLabel_ftvpl_617";
+const finCardValue = "_finCardValue_ftvpl_625";
+const connItems = "_connItems_ftvpl_633";
+const connItem = "_connItem_ftvpl_633";
+const connItemDest = "_connItemDest_ftvpl_647";
+const connItemTime = "_connItemTime_ftvpl_654";
+const ctaStrip = "_ctaStrip_ftvpl_674";
+const ctaStripActions = "_ctaStripActions_ftvpl_702";
+const btnGold = "_btnGold_ftvpl_708";
+const btnGhost = "_btnGhost_ftvpl_731";
+const reveal = "_reveal_ftvpl_755";
+const visible = "_visible_ftvpl_761";
+const styles$1 = {
+  detailsPanel,
+  detailsHero,
+  detailsHeroOverlay,
+  detailsHeroBack,
+  detailsHeroBadge,
+  detailsHeroDeveloper,
+  detailsStats,
+  detailsStat,
+  detailsStatValue,
+  detailsStatLabel,
+  ds,
+  dsLight,
+  dsWhite,
+  dsDark,
+  dsDarker,
+  dsLabel,
+  dsTitle,
+  dsDesc,
+  descSection,
+  descHighlights,
+  descHighlight,
+  descHighlightValue,
+  descHighlightLabel,
+  unitTypesHeader,
+  unitTabs,
+  unitTab,
+  active,
+  unitGrid,
+  unitCard,
+  unitCardImg,
+  unitCardType,
+  unitCardBody,
+  unitCardName,
+  unitCardSpecs,
+  unitCardSpec,
+  unitCardArea,
+  unitCardAreaVal,
+  unitCardDl,
+  facilitiesGrid,
+  facilityItem,
+  facilityOverlay,
+  facilityName,
+  facilityDesc,
+  smartGrid,
+  smartItem,
+  smartIcon,
+  amenitiesLayout,
+  amenityCol,
+  amenityList,
+  dualSection,
+  finCards,
+  finCard,
+  finCardIcon,
+  finCardLabel,
+  finCardValue,
+  connItems,
+  connItem,
+  connItemDest,
+  connItemTime,
+  ctaStrip,
+  ctaStripActions,
+  btnGold,
+  btnGhost,
+  reveal,
+  visible
+};
+const ProjectOverview = ({ content, onBack }) => {
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r;
+  const [activeTab, setActiveTab] = reactExports.useState("all");
+  const curation = content == null ? void 0 : content.curation;
+  let projectData = null;
+  if (Array.isArray(curation) && curation.length > 0) {
+    const firstItem = curation[0];
+    if ("personalizations" in firstItem && Array.isArray(firstItem.personalizations) && firstItem.personalizations.length > 0) {
+      const personalization = firstItem.personalizations[0];
+      if ("data" in personalization && Array.isArray(personalization.data) && personalization.data.length > 0) {
+        projectData = personalization.data[0];
+      }
+    }
+  }
+  if (!projectData || !projectData.property_overview) {
+    return null;
+  }
+  const overview = projectData.property_overview;
+  const projectName = projectData.project_name || "";
+  const developer = projectData.developer || "";
+  const community = ((_a = projectData.location) == null ? void 0 : _a.community) || "";
+  const filteredUnits = ((_b = overview.Model_Types) == null ? void 0 : _b.filter((unit) => {
+    var _a2, _b2;
+    if (activeTab === "all") return true;
+    if (activeTab === "apt") return (_a2 = unit.type) == null ? void 0 : _a2.toLowerCase().includes("apartment");
+    if (activeTab === "villa") return (_b2 = unit.type) == null ? void 0 : _b2.toLowerCase().includes("villa");
+    return true;
+  })) || [];
+  reactExports.useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add(styles$1.visible);
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+    const revealElements = document.querySelectorAll(`.${styles$1.reveal}`);
+    revealElements.forEach((el) => observer.observe(el));
+    return () => {
+      revealElements.forEach((el) => observer.unobserve(el));
+    };
+  }, []);
+  const handleScheduleConsultation = () => {
+    if (window.AdaptiveWebsite && typeof window.AdaptiveWebsite.sendTextMessage === "function") {
+      window.AdaptiveWebsite.sendTextMessage("Schedule Consultation").catch((error) => {
+        console.error("Failed to send message:", error);
+      });
+    }
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.detailsPanel, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.detailsHero, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "img",
+        {
+          src: ((_d = (_c = overview.Project_Facilities) == null ? void 0 : _c[0]) == null ? void 0 : _d.facility_url) || "https://talaatmoustafa.com/wp-content/uploads/2023/10/Hospitality-Services.jpg",
+          alt: projectName
+        }
+      ),
+      onBack && /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { className: styles$1.detailsHeroBack, onClick: onBack, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M19 12H5M12 19l-7-7 7-7" }) }),
+        "Back to Results"
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.detailsHeroOverlay, children: [
+        community && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.detailsHeroBadge, children: community }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { children: projectName.split("–").map(
+          (part, i) => i === 1 ? /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: part }, i) : part
+        ) }),
+        developer && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.detailsHeroDeveloper, children: [
+          "Developed by ",
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: developer })
+        ] })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.detailsStats, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.detailsStat, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.detailsStatValue, children: "5,000" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.detailsStatLabel, children: "Feddans" })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.detailsStat, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.detailsStatValue, children: "50%" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.detailsStatLabel, children: "Green Space" })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.detailsStat, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.detailsStatValue, children: "90+" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.detailsStatLabel, children: "Feddan Club" })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.detailsStat, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.detailsStatValue, children: ((_g = (_f = (_e = overview.financial_details) == null ? void 0 : _e.payment_plan) == null ? void 0 : _f.milestones) == null ? void 0 : _g.down_payment) || "From 5%" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.detailsStatLabel, children: "Down Payment" })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.detailsStat, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.detailsStatValue, children: ((_h = overview.financial_details) == null ? void 0 : _h.estimated_handover) || "Q4 2026" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.detailsStatLabel, children: "First Delivery" })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `${styles$1.ds} ${styles$1.dsLight}`, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `${styles$1.descSection} ${styles$1.reveal}`, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.dsLabel, children: "The Vision" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.dsTitle, children: [
+          "A Global Benchmark for ",
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "Smart Living" })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: styles$1.dsDesc, children: overview.description })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.descHighlights, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.descHighlight, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.descHighlightValue, children: "54" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.descHighlightLabel, children: "Feddan Educational Zone" })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.descHighlight, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.descHighlightValue, children: "15" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.descHighlightLabel, children: "Feddan Medical Region" })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.descHighlight, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.descHighlightValue, children: "25" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.descHighlightLabel, children: "Feddan Business District" })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.descHighlight, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.descHighlightValue, children: "10" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.descHighlightLabel, children: "Schools & University" })
+        ] })
+      ] })
+    ] }) }),
+    overview.Project_Facilities && overview.Project_Facilities.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `${styles$1.ds} ${styles$1.dsLight}`, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.reveal, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.dsLabel, children: "World-Class Facilities" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.dsTitle, children: [
+          "Everything Within ",
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "Reach" })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `${styles$1.facilitiesGrid} ${styles$1.reveal}`, children: overview.Project_Facilities.map((facility, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.facilityItem, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "img",
+          {
+            src: facility.facility_url || "",
+            alt: facility.facility_title || "",
+            loading: "lazy"
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.facilityOverlay, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.facilityName, children: facility.facility_title }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.facilityDesc, children: [
+            facility.facility_title === "Commercial Services" && "A bustling district offering a multitude of commercial services catering to every need.",
+            facility.facility_title === "Neighborhood Center" && "A comprehensive complex providing all essential public services.",
+            facility.facility_title === "Social and Sports Club" && "Over 90 feddans of sporting and leisure activities.",
+            facility.facility_title === "Educational Services" && "54 feddans for 10 schools, international institutions, a university and nursery.",
+            facility.facility_title === "Medical Facilities" && "15 feddans for an integrated hospital and specialized medical centers."
+          ] })
+        ] })
+      ] }, index)) })
+    ] }),
+    overview.Smart_Home_Services && overview.Smart_Home_Services.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `${styles$1.ds} ${styles$1.dsDarker}`, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.reveal, style: { textAlign: "center", maxWidth: "550px", margin: "0 auto 0" }, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.dsLabel, children: "Smart Living" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.dsTitle, style: { color: "#fff" }, children: [
+          "Intelligence ",
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "Built In" })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: styles$1.dsDesc, style: { margin: "0 auto" }, children: "Every home equipped with integrated smart technologies — controlled from a single app." })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `${styles$1.smartGrid} ${styles$1.reveal}`, children: overview.Smart_Home_Services.map((service, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.smartItem, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.smartIcon, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("svg", { width: "22", height: "22", fill: "none", stroke: "#C9A96E", strokeWidth: "1.5", viewBox: "0 0 24 24", children: [
+          index === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M13 2L3 14h9l-1 8 10-12h-9l1-8z" }),
+          index === 1 && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("rect", { x: "3", y: "11", width: "18", height: "11", rx: "2" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M7 11V7a5 5 0 0110 0v4" })
+          ] }),
+          index === 2 && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { cx: "12", cy: "12", r: "4" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M12 2v2m0 16v2m10-10h-2M4 12H2m15.07-7.07l-1.41 1.41M8.34 15.66l-1.41 1.41m12.14 0l-1.41-1.41M8.34 8.34L6.93 6.93" })
+          ] }),
+          index === 3 && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M12 9v3l2 1m5-1a7 7 0 11-14 0 7 7 0 0114 0z" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M4 4l3 3M20 4l-3 3" })
+          ] }),
+          index === 4 && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("rect", { x: "5", y: "2", width: "14", height: "20", rx: "3" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { cx: "12", cy: "18", r: "1" })
+          ] })
+        ] }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h4", { children: service.smart_home_service_name }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: service.smart_home_service_description })
+      ] }, index)) })
+    ] }),
+    overview.Model_Types && overview.Model_Types.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `${styles$1.ds} ${styles$1.dsDark}`, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `${styles$1.unitTypesHeader} ${styles$1.reveal}`, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.dsLabel, children: "Residences" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.dsTitle, style: { color: "#fff" }, children: [
+            "Explore ",
+            /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "Unit Types" })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.unitTabs, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "button",
+            {
+              className: `${styles$1.unitTab} ${activeTab === "all" ? styles$1.active : ""}`,
+              onClick: () => setActiveTab("all"),
+              children: "All"
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "button",
+            {
+              className: `${styles$1.unitTab} ${activeTab === "apt" ? styles$1.active : ""}`,
+              onClick: () => setActiveTab("apt"),
+              children: "Apartments"
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "button",
+            {
+              className: `${styles$1.unitTab} ${activeTab === "villa" ? styles$1.active : ""}`,
+              onClick: () => setActiveTab("villa"),
+              children: "Villas"
+            }
+          )
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `${styles$1.unitGrid} ${styles$1.reveal}`, children: filteredUnits.map((unit, index) => {
+        var _a2;
+        const isApartment = (_a2 = unit.type) == null ? void 0 : _a2.toLowerCase().includes("apartment");
+        const category = isApartment ? "apt" : "villa";
+        return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.unitCard, "data-cat": category, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.unitCardImg, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              "img",
+              {
+                src: unit.image_url || "",
+                alt: unit.model_name || "",
+                loading: "lazy"
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$1.unitCardType, children: isApartment ? "Apartment" : "Villa" })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.unitCardBody, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.unitCardName, children: unit.model_name }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.unitCardSpecs, children: [
+              unit.bedrooms && /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: styles$1.unitCardSpec, children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.5", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M3 21V7l9-4 9 4v14" }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M9 21V11h6v10" })
+                ] }),
+                unit.bedrooms,
+                " Bed"
+              ] }),
+              unit.bathrooms && /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: styles$1.unitCardSpec, children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.5", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M4 12h16M4 12v6a2 2 0 002 2h12a2 2 0 002-2v-6" }) }),
+                unit.bathrooms,
+                " Bath"
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.unitCardArea, children: [
+              unit.area && /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: styles$1.unitCardAreaVal, children: [
+                unit.area,
+                " m²"
+              ] }),
+              unit.download_url && /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "a",
+                {
+                  className: styles$1.unitCardDl,
+                  href: unit.download_url,
+                  target: "_blank",
+                  rel: "noopener noreferrer",
+                  children: "Floorplan ↓"
+                }
+              )
+            ] })
+          ] })
+        ] }, index);
+      }) })
+    ] }),
+    overview.amenities && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `${styles$1.ds} ${styles$1.dsWhite}`, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.reveal, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.dsLabel, children: "Lifestyle" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.dsTitle, children: [
+          "Curated ",
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "Amenities" })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `${styles$1.amenitiesLayout} ${styles$1.reveal}`, children: [
+        overview.amenities.wellness_fitness && overview.amenities.wellness_fitness.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.amenityCol, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { children: "Wellness & Fitness" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: styles$1.amenityList, children: overview.amenities.wellness_fitness.map((item, index) => /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: item }, index)) })
+        ] }),
+        overview.amenities.community_leisure && overview.amenities.community_leisure.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.amenityCol, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { children: "Community & Leisure" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: styles$1.amenityList, children: overview.amenities.community_leisure.map((item, index) => /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: item }, index)) })
+        ] }),
+        overview.amenities.nearby_attractions && overview.amenities.nearby_attractions.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.amenityCol, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { children: "Nearby Attractions" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: styles$1.amenityList, children: overview.amenities.nearby_attractions.map((item, index) => /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: item }, index)) })
+        ] })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.dualSection, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `${styles$1.dsLight}`, style: { borderRight: "1px solid rgba(0,0,0,0.06)" }, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.reveal, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.dsLabel, children: "Investment" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.dsTitle, children: [
+            "Payment ",
+            /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "Plans" })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `${styles$1.finCards} ${styles$1.reveal}`, children: [
+          ((_i = overview.financial_details) == null ? void 0 : _i.starting_price) && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.finCard, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.finCardIcon, children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { width: "20", height: "20", fill: "none", stroke: "#C9A96E", strokeWidth: "1.5", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M12 2v20m5-17H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H7" }) }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.finCardLabel, children: "Starting Price" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.finCardValue, children: overview.financial_details.starting_price })
+            ] })
+          ] }),
+          ((_l = (_k = (_j = overview.financial_details) == null ? void 0 : _j.payment_plan) == null ? void 0 : _k.milestones) == null ? void 0 : _l.down_payment) && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.finCard, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.finCardIcon, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("svg", { width: "20", height: "20", fill: "none", stroke: "#C9A96E", strokeWidth: "1.5", viewBox: "0 0 24 24", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("rect", { x: "3", y: "4", width: "18", height: "16", rx: "2" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M3 10h18M7 16h4" })
+            ] }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.finCardLabel, children: "Down Payment" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.finCardValue, children: overview.financial_details.payment_plan.milestones.down_payment })
+            ] })
+          ] }),
+          ((_n = (_m = overview.financial_details) == null ? void 0 : _m.payment_plan) == null ? void 0 : _n.structure) && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.finCard, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.finCardIcon, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("svg", { width: "20", height: "20", fill: "none", stroke: "#C9A96E", strokeWidth: "1.5", viewBox: "0 0 24 24", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { cx: "12", cy: "12", r: "10" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M12 6v6l4 2" })
+            ] }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.finCardLabel, children: "Installments" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.finCardValue, children: overview.financial_details.payment_plan.structure })
+            ] })
+          ] }),
+          ((_o = overview.financial_details) == null ? void 0 : _o.estimated_handover) && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.finCard, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.finCardIcon, children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { width: "20", height: "20", fill: "none", stroke: "#C9A96E", strokeWidth: "1.5", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M3 12l2 2 4-4m3 0l2 2 4-4" }) }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.finCardLabel, children: "Estimated Delivery" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.finCardValue, children: overview.financial_details.estimated_handover })
+            ] })
+          ] })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.dsDark, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.reveal, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.dsLabel, children: "Location" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.dsTitle, style: { color: "#fff" }, children: [
+            "Perfectly ",
+            /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "Connected" })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `${styles$1.connItems} ${styles$1.reveal}`, children: [
+          ((_p = overview.connectivity) == null ? void 0 : _p.new_administrative_capital) && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.connItem, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$1.connItemDest, children: "New Administrative Capital" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$1.connItemTime, children: overview.connectivity.new_administrative_capital })
+          ] }),
+          ((_q = overview.connectivity) == null ? void 0 : _q.cairo_international_airport) && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.connItem, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$1.connItemDest, children: "Cairo International Airport" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$1.connItemTime, children: overview.connectivity.cairo_international_airport })
+          ] }),
+          ((_r = overview.connectivity) == null ? void 0 : _r.madinaty_city) && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.connItem, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$1.connItemDest, children: "Madinaty City" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles$1.connItemTime, children: overview.connectivity.madinaty_city })
+          ] })
+        ] })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$1.ctaStrip, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.reveal, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("h3", { children: [
+        "Ready to Explore ",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: projectName.split("–")[0] }),
+        "?"
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "Schedule a consultation or request detailed pricing for your preferred unit type." }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.ctaStripActions, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { className: styles$1.btnGold, onClick: handleScheduleConsultation, children: [
+          "Schedule Consultation",
+          /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M5 12h14M13 6l6 6-6 6" }) })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { className: styles$1.btnGhost, children: [
+          "Download Brochure",
+          /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M12 5v14M5 12l7 7 7-7" }) })
+        ] })
+      ] })
+    ] }) })
+  ] });
+};
+const ProjectOverview$1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  default: ProjectOverview
+}, Symbol.toStringTag, { value: "Module" }));
+const schedulePanel = "_schedulePanel_qsl9a_3";
+const scheduleHero = "_scheduleHero_qsl9a_11";
+const scheduleHeroOverlay = "_scheduleHeroOverlay_qsl9a_24";
+const scheduleHeroLabel = "_scheduleHeroLabel_qsl9a_34";
+const scheduleContent = "_scheduleContent_qsl9a_58";
+const scheduleInfo = "_scheduleInfo_qsl9a_65";
+const infoBlock = "_infoBlock_qsl9a_71";
+const infoBlockTitle = "_infoBlockTitle_qsl9a_79";
+const addressCard = "_addressCard_qsl9a_90";
+const addressPinCircle = "_addressPinCircle_qsl9a_96";
+const addressLines = "_addressLines_qsl9a_114";
+const addressName = "_addressName_qsl9a_120";
+const addressLine = "_addressLine_qsl9a_114";
+const directionsLink = "_directionsLink_qsl9a_135";
+const hoursCompact = "_hoursCompact_qsl9a_163";
+const hoursRow = "_hoursRow_qsl9a_169";
+const hoursIconCircle = "_hoursIconCircle_qsl9a_175";
+const open = "_open_qsl9a_185";
+const closed = "_closed_qsl9a_189";
+const hoursLabel = "_hoursLabel_qsl9a_198";
+const hoursValue = "_hoursValue_qsl9a_207";
+const badgeOpen = "_badgeOpen_qsl9a_214";
+const badgeClosed = "_badgeClosed_qsl9a_227";
+const contactRow = "_contactRow_qsl9a_241";
+const contactIcon = "_contactIcon_qsl9a_253";
+const contactLabel = "_contactLabel_qsl9a_270";
+const contactValue = "_contactValue_qsl9a_278";
+const parkingNote = "_parkingNote_qsl9a_291";
+const scheduleRight = "_scheduleRight_qsl9a_318";
+const mapContainer = "_mapContainer_qsl9a_323";
+const mapOverlayCard = "_mapOverlayCard_qsl9a_391";
+const mapOverlayPin = "_mapOverlayPin_qsl9a_404";
+const mapOverlayInfo = "_mapOverlayInfo_qsl9a_421";
+const mapDirBtn = "_mapDirBtn_qsl9a_440";
+const styles = {
+  schedulePanel,
+  scheduleHero,
+  scheduleHeroOverlay,
+  scheduleHeroLabel,
+  scheduleContent,
+  scheduleInfo,
+  infoBlock,
+  infoBlockTitle,
+  addressCard,
+  addressPinCircle,
+  addressLines,
+  addressName,
+  addressLine,
+  directionsLink,
+  hoursCompact,
+  hoursRow,
+  hoursIconCircle,
+  open,
+  closed,
+  hoursLabel,
+  hoursValue,
+  badgeOpen,
+  badgeClosed,
+  contactRow,
+  contactIcon,
+  contactLabel,
+  contactValue,
+  parkingNote,
+  scheduleRight,
+  mapContainer,
+  mapOverlayCard,
+  mapOverlayPin,
+  mapOverlayInfo,
+  mapDirBtn
+};
+const ScheduleAppointment = ({ content, onBack }) => {
+  const curation = content == null ? void 0 : content.curation;
+  let scheduleData = null;
+  if (Array.isArray(curation) && curation.length > 0) {
+    const firstItem = curation[0];
+    if ("personalizations" in firstItem && Array.isArray(firstItem.personalizations) && firstItem.personalizations.length > 0) {
+      const personalization = firstItem.personalizations[0];
+      if ("data" in personalization && Array.isArray(personalization.data) && personalization.data.length > 0) {
+        scheduleData = personalization.data[0];
+      }
+    }
+  }
+  if (!scheduleData) {
+    return null;
+  }
+  const pageInfo = scheduleData.page_info || {};
+  const salesCenter = scheduleData.sales_center || {};
+  const address = salesCenter.address || {};
+  const mapData = salesCenter.map_data || {};
+  const operatingHours = salesCenter.operating_hours || [];
+  const contactMethods = salesCenter.contact_methods || {};
+  const FALLBACK_COORDINATES = {
+    lat: 30.107042532690617,
+    lng: 31.623353110325514
+  };
+  const FALLBACK_DIRECTIONS_URL = "https://maps.app.goo.gl/P3FMLJb9iDcR37bJ8";
+  const getMapEmbedUrl = () => {
+    const iframeUrl = mapData.iframe_embed_url;
+    if (!iframeUrl || iframeUrl.toLowerCase().includes("redacted") || iframeUrl.toLowerCase().includes("placeholder") || iframeUrl === "URL_Redacted" || !iframeUrl.startsWith("http")) {
+      return null;
+    }
+    return iframeUrl;
+  };
+  const getFallbackMapUrl = () => {
+    return `https://www.google.com/maps?q=${FALLBACK_COORDINATES.lat},${FALLBACK_COORDINATES.lng}&output=embed&zoom=15`;
+  };
+  const mapEmbedUrl = getMapEmbedUrl() || getFallbackMapUrl();
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.schedulePanel, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.scheduleHero, children: [
+      pageInfo.hero_image_url && /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: pageInfo.hero_image_url, alt: pageInfo.page_title || "Schedule a Visit" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.scheduleHeroOverlay, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.scheduleHeroLabel, children: pageInfo.hero_label || "Book Your Experience" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("h1", { children: [
+          "Schedule a ",
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "Visit" })
+        ] })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.scheduleContent, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.scheduleInfo, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.infoBlock, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: styles.infoBlockTitle, children: "Find Us" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.addressCard, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.addressPinCircle, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.5", xmlns: "http://www.w3.org/2000/svg", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { cx: "12", cy: "9", r: "2.5" })
+            ] }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.addressLines, children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.addressName, children: salesCenter.name || "TMG Sales Center" }),
+              address.line_1 && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles.addressLine, children: address.line_1 }),
+              address.line_2 && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles.addressLine, children: address.line_2 }),
+              address.region && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles.addressLine, children: address.region })
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "a",
+            {
+              className: styles.directionsLink,
+              href: mapData.directions_url || FALLBACK_DIRECTIONS_URL,
+              target: "_blank",
+              rel: "noopener noreferrer",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", xmlns: "http://www.w3.org/2000/svg", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { cx: "12", cy: "9", r: "2.5" })
+                ] }),
+                "Get Directions"
+              ]
+            }
+          )
+        ] }),
+        operatingHours.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.infoBlock, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: styles.infoBlockTitle, children: "Operating Hours" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.hoursCompact, children: operatingHours.map((hour, index) => {
+            var _a;
+            const isOpen = ((_a = hour.current_status) == null ? void 0 : _a.toLowerCase()) === "open";
+            return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.hoursRow, children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `${styles.hoursIconCircle} ${isOpen ? styles.open : styles.closed}`, children: isOpen ? /* @__PURE__ */ jsxRuntimeExports.jsxs("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "#2E7D5B", strokeWidth: "1.5", xmlns: "http://www.w3.org/2000/svg", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { cx: "12", cy: "12", r: "10" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M12 6v6l4 2" })
+              ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "#C44", strokeWidth: "1.5", xmlns: "http://www.w3.org/2000/svg", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { cx: "12", cy: "12", r: "10" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M15 9l-6 6M9 9l6 6" })
+              ] }) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.hoursLabel, children: hour.days || "" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.hoursValue, children: [
+                  hour.hours || "",
+                  isOpen ? /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles.badgeOpen, children: "Open" }) : /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: styles.badgeClosed, children: "Closed" })
+                ] })
+              ] })
+            ] }, index);
+          }) })
+        ] }),
+        (contactMethods.phone || contactMethods.email || contactMethods.whatsapp) && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.infoBlock, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: styles.infoBlockTitle, children: "Contact Us" }),
+          contactMethods.phone && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.contactRow, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.contactIcon, children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.5", xmlns: "http://www.w3.org/2000/svg", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" }) }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.contactLabel, children: "Phone" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("a", { className: styles.contactValue, href: contactMethods.phone_link || `tel:${contactMethods.phone}`, children: contactMethods.phone })
+            ] })
+          ] }),
+          contactMethods.email && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.contactRow, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.contactIcon, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.5", xmlns: "http://www.w3.org/2000/svg", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("rect", { x: "2", y: "4", width: "20", height: "16", rx: "2" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M22 4l-10 8L2 4" })
+            ] }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.contactLabel, children: "Email" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("a", { className: styles.contactValue, href: contactMethods.email_link || `mailto:${contactMethods.email}`, children: contactMethods.email })
+            ] })
+          ] }),
+          contactMethods.whatsapp && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.contactRow, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.contactIcon, children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.5", xmlns: "http://www.w3.org/2000/svg", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" }) }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.contactLabel, children: "WhatsApp" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("a", { className: styles.contactValue, href: `https://wa.me/${contactMethods.whatsapp.replace(/[^0-9]/g, "")}`, children: contactMethods.whatsapp })
+            ] })
+          ] })
+        ] }),
+        salesCenter.visitor_notes && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.parkingNote, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.5", xmlns: "http://www.w3.org/2000/svg", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("rect", { x: "3", y: "3", width: "18", height: "18", rx: "2" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M9 17V7h4a3 3 0 010 6H9" })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: salesCenter.visitor_notes })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.scheduleRight, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.mapContainer, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "iframe",
+          {
+            src: mapEmbedUrl,
+            loading: "lazy",
+            referrerPolicy: "no-referrer-when-downgrade",
+            allowFullScreen: true,
+            title: "Sales Center Location"
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.mapOverlayCard, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles.mapOverlayPin, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", xmlns: "http://www.w3.org/2000/svg", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { cx: "12", cy: "9", r: "2.5" })
+          ] }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles.mapOverlayInfo, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("h4", { children: salesCenter.name || "TMG Sales Center" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { children: [
+              address.line_1 && `${address.line_1}, `,
+              address.line_2 || ""
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "a",
+            {
+              className: styles.mapDirBtn,
+              href: mapData.directions_url || FALLBACK_DIRECTIONS_URL,
+              target: "_blank",
+              rel: "noopener noreferrer",
+              children: "Directions"
+            }
+          )
+        ] })
+      ] }) })
+    ] })
+  ] });
+};
+const ScheduleAppointment$1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  default: ScheduleAppointment
 }, Symbol.toStringTag, { value: "Module" }));
 
 }
