@@ -20427,11 +20427,124 @@ const ProductDetails$2 = React.lazy(() => __vitePreload(() => Promise.resolve().
 const PropertyDetails$2 = React.lazy(() => __vitePreload(() => Promise.resolve().then(() => PropertyDetails$1), true ? void 0 : void 0));
 const ProjectOverview$2 = React.lazy(() => __vitePreload(() => Promise.resolve().then(() => ProjectOverview$1), true ? void 0 : void 0));
 const ScheduleAppointment$2 = React.lazy(() => __vitePreload(() => Promise.resolve().then(() => ScheduleAppointment$1), true ? void 0 : void 0));
+function hasMinimalPayload(personalizations) {
+  return personalizations.some(
+    (p) => (p.personalizationPointName || p.PersonalizationPointName || p.bannerPersonalizationPointName) && (!p.data || p.data.length === 0)
+  );
+}
+function extractPersonalizationPointNames(personalizations) {
+  const names = [];
+  personalizations.forEach((p) => {
+    const main = p.personalizationPointName || p.PersonalizationPointName;
+    if (main) names.push(main);
+    if (p.bannerPersonalizationPointName) names.push(p.bannerPersonalizationPointName);
+  });
+  return [...new Set(names)];
+}
+function normalizePersonalizationResponse(personalization) {
+  var _a;
+  if (personalization.data && Array.isArray(personalization.data) && personalization.data.length > 0) {
+    return {
+      curation: [{ personalizations: [{ data: personalization.data }] }],
+      options: []
+    };
+  }
+  const payloadStr = (_a = personalization.attributes) == null ? void 0 : _a.Payload;
+  if (payloadStr && typeof payloadStr === "string") {
+    try {
+      const parsed = JSON.parse(payloadStr);
+      if ((parsed == null ? void 0 : parsed.curation) || (parsed == null ? void 0 : parsed.options)) {
+        return {
+          curation: parsed.curation ?? [],
+          options: parsed.options ?? []
+        };
+      }
+    } catch (e) {
+      console.error("[ContentZone] Failed to parse attributes.Payload:", e);
+    }
+  }
+  return null;
+}
 const ContentZone = ({ show }) => {
+  var _a, _b, _c, _d;
   const [contentZoneContent2, setContentZoneContent] = reactExports.useState();
+  const [isFetchingPersonalization, setIsFetchingPersonalization] = reactExports.useState(false);
+  const [fetchError, setFetchError] = reactExports.useState(null);
   const previousContentRef = reactExports.useRef(null);
   const contentRef = reactExports.useRef(contentZoneContent2);
   contentRef.current = contentZoneContent2;
+  const fetchPersonalizationData = reactExports.useCallback(
+    async (baseContent, pointNames) => {
+      var _a2, _b2, _c2, _d2;
+      console.log("[ContentZone] Fetching personalization for:", pointNames);
+      setIsFetchingPersonalization(true);
+      setFetchError(null);
+      try {
+        if (!((_b2 = (_a2 = window.SalesforceInteractions) == null ? void 0 : _a2.Personalization) == null ? void 0 : _b2.fetch)) {
+          throw new Error("SalesforceInteractions.Personalization.fetch not available. Ensure C360A beacon is loaded.");
+        }
+        const response = await window.SalesforceInteractions.Personalization.fetch(pointNames);
+        const personalizations = (response == null ? void 0 : response.personalizations) ?? [];
+        let mergedCuration = baseContent.curation;
+        let mergedOptions = baseContent.options ?? [];
+        for (const p of personalizations) {
+          const normalized = normalizePersonalizationResponse(p);
+          if (normalized) {
+            if ((_c2 = normalized.curation) == null ? void 0 : _c2.length) mergedCuration = normalized.curation;
+            if ((_d2 = normalized.options) == null ? void 0 : _d2.length) mergedOptions = normalized.options;
+            break;
+          }
+        }
+        setContentZoneContent({
+          ...baseContent,
+          curation: mergedCuration,
+          options: mergedOptions,
+          template: baseContent.template ?? [{ name: "Recs" }]
+        });
+        console.log("[ContentZone] Personalization fetch complete, content updated");
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Failed to load personalization data";
+        console.error("[ContentZone] Personalization fetch error:", err);
+        setFetchError(msg);
+      } finally {
+        setIsFetchingPersonalization(false);
+      }
+    },
+    []
+  );
+  const processContent = reactExports.useCallback(
+    (content) => {
+      const curation2 = content.curation;
+      if (!Array.isArray(curation2) || curation2.length === 0) {
+        setContentZoneContent(content);
+        return;
+      }
+      const first = curation2[0];
+      const personalizations = first == null ? void 0 : first.personalizations;
+      if (!Array.isArray(personalizations) || personalizations.length === 0) {
+        setContentZoneContent(content);
+        return;
+      }
+      const p = personalizations[0];
+      const pointName2 = p.personalizationPointName || p.PersonalizationPointName;
+      if (pointName2 === "TMG_Project_Overview" || pointName2 === "Schedule_Appointment") {
+        setContentZoneContent(content);
+        return;
+      }
+      if (hasMinimalPayload(personalizations)) {
+        const pointNames = extractPersonalizationPointNames(personalizations);
+        if (pointNames.length > 0) {
+          fetchPersonalizationData(content, pointNames);
+          setContentZoneContent(content);
+        } else {
+          setContentZoneContent(content);
+        }
+      } else {
+        setContentZoneContent(content);
+      }
+    },
+    [fetchPersonalizationData]
+  );
   reactExports.useEffect(() => {
     const handlePropertyDetailsRequested = (event) => {
       const { property } = event.detail;
@@ -20468,16 +20581,15 @@ const ContentZone = ({ show }) => {
             jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
           }
           const parsed = JSON.parse(jsonText);
-          if (parsed && parsed.curation) {
-            console.log("[ContentZone] Parsed JSON from content text field");
-            setContentZoneContent(parsed);
+          if (parsed == null ? void 0 : parsed.curation) {
+            processContent(parsed);
             return;
           }
         } catch (e) {
           console.error("[ContentZone] Failed to parse JSON from text:", e);
         }
       }
-      setContentZoneContent(content);
+      processContent(content);
     }
   };
   const handleListConversationEntries = (event) => {
@@ -20487,7 +20599,7 @@ const ContentZone = ({ show }) => {
       if (window.AdaptiveWebsite.util.isConversationEntryStaticContentMessage(entry) && !window.AdaptiveWebsite.util.isMessageFromEndUser(entry)) {
         const payload = getMessagePayloadFromConversationEntry(entry);
         if (payload) {
-          setContentZoneContent(payload);
+          processContent(payload);
           return;
         }
       }
@@ -20495,161 +20607,96 @@ const ContentZone = ({ show }) => {
   };
   reactExports.useEffect(() => {
     const handleMessageSent = (event) => {
-      var _a, _b, _c;
+      var _a2, _b2, _c2;
       const entry = window.AdaptiveWebsite.util.parseEntryPayload(event.detail.conversationEntry);
-      if (window.AdaptiveWebsite.util.isConversationEntryStaticContentMessage(entry) && !window.AdaptiveWebsite.util.isMessageFromEndUser(entry)) {
-        const payload = getMessagePayloadFromConversationEntry(entry);
-        if (payload) {
-          console.log("[ContentZone] Message payload extracted:", payload);
-          let contentToUse = payload;
-          if (payload.text && !payload.curation && payload.text.includes("```json")) {
-            try {
-              let jsonText = payload.text.trim();
-              if (jsonText.startsWith("```json")) {
-                jsonText = jsonText.replace(/^```json\s*/, "").replace(/\s*```$/, "").trim();
-              } else if (jsonText.startsWith("```")) {
-                jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
-              }
-              const parsed = JSON.parse(jsonText);
-              if (parsed && parsed.curation) {
-                console.log("[ContentZone] Parsed JSON from payload text field");
-                contentToUse = parsed;
-              }
-            } catch (e) {
-              console.error("[ContentZone] Failed to parse JSON from payload text:", e);
+      if (!window.AdaptiveWebsite.util.isConversationEntryStaticContentMessage(entry) || window.AdaptiveWebsite.util.isMessageFromEndUser(entry)) {
+        return;
+      }
+      let payload = getMessagePayloadFromConversationEntry(entry);
+      if (!payload) {
+        const text = (_c2 = (_b2 = (_a2 = entry.entryPayload) == null ? void 0 : _a2.abstractMessage) == null ? void 0 : _b2.staticContent) == null ? void 0 : _c2.text;
+        if (text && typeof text === "string") {
+          try {
+            let jsonText = text.trim();
+            if (jsonText.startsWith("```json")) {
+              jsonText = jsonText.replace(/^```json\s*/, "").replace(/\s*```$/, "").trim();
+            } else if (jsonText.startsWith("```")) {
+              jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
             }
-          }
-          const curation = contentToUse.curation;
-          if (Array.isArray(curation) && curation.length > 0 && "personalizations" in curation[0]) {
-            const firstItem = curation[0];
-            if (Array.isArray(firstItem.personalizations) && firstItem.personalizations.length > 0) {
-              const personalization = firstItem.personalizations[0];
-              console.log("[ContentZone] Personalization found:", personalization.PersonalizationPointName);
-              if (personalization.PersonalizationPointName === "TMG_Project_Overview") {
-                console.log("[ContentZone] Setting ProjectOverview content");
-                setContentZoneContent(contentToUse);
-                return;
-              }
-              if (personalization.PersonalizationPointName === "Schedule_Appointment") {
-                console.log("[ContentZone] Setting ScheduleAppointment content");
-                setContentZoneContent(contentToUse);
-                return;
-              }
-            }
-          }
-          if (contentToUse.curation) {
-            console.log("[ContentZone] Setting content with curation");
-            setContentZoneContent(contentToUse);
-          }
-        } else {
-          const text = (_c = (_b = (_a = entry.entryPayload) == null ? void 0 : _a.abstractMessage) == null ? void 0 : _b.staticContent) == null ? void 0 : _c.text;
-          if (text && typeof text === "string") {
-            try {
-              let jsonText = text.trim();
-              if (jsonText.startsWith("```json")) {
-                jsonText = jsonText.replace(/^```json\s*/, "").replace(/\s*```$/, "").trim();
-              } else if (jsonText.startsWith("```")) {
-                jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
-              }
-              const parsed = JSON.parse(jsonText);
-              if (parsed && parsed.curation) {
-                console.log("[ContentZone] Parsed JSON from text field");
-                setContentZoneContent(parsed);
-              }
-            } catch (e) {
-              console.error("[ContentZone] Failed to parse JSON from text:", e);
-            }
+            const parsed = JSON.parse(jsonText);
+            if (parsed == null ? void 0 : parsed.curation) payload = parsed;
+          } catch {
           }
         }
+      }
+      if (payload) {
+        if (payload.text && !payload.curation && payload.text.includes("```json")) {
+          try {
+            let jsonText = payload.text.trim();
+            if (jsonText.startsWith("```json")) {
+              jsonText = jsonText.replace(/^```json\s*/, "").replace(/\s*```$/, "").trim();
+            } else if (jsonText.startsWith("```")) {
+              jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
+            }
+            const parsed = JSON.parse(jsonText);
+            if (parsed == null ? void 0 : parsed.curation) payload = parsed;
+          } catch {
+          }
+        }
+        processContent(payload);
       }
     };
     window.addEventListener(window.AdaptiveWebsite.Events.ON_EMBEDDED_MESSAGE_SENT, handleMessageSent);
-    return () => {
-      window.removeEventListener(window.AdaptiveWebsite.Events.ON_EMBEDDED_MESSAGE_SENT, handleMessageSent);
-    };
-  }, []);
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: show && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$b.contentZoneContainer, children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$b.contentZoneContent, children: contentZoneContent2 ? (() => {
-    const template = contentZoneContent2.template;
-    if (template && Array.isArray(template) && template.length > 0) {
-      const firstTemplate = template[0];
-      const templateName = typeof firstTemplate === "object" && firstTemplate !== null && "name" in firstTemplate ? firstTemplate.name : null;
-      if (templateName === "Recs" || templateName === "tmgPropertyView") {
+    return () => window.removeEventListener(window.AdaptiveWebsite.Events.ON_EMBEDDED_MESSAGE_SENT, handleMessageSent);
+  }, [processContent]);
+  const curation = contentZoneContent2 == null ? void 0 : contentZoneContent2.curation;
+  const hasPersonalizations = Array.isArray(curation) && curation.length > 0 && "personalizations" in curation[0];
+  const firstPersonalization = hasPersonalizations ? (_a = curation[0].personalizations) == null ? void 0 : _a[0] : null;
+  const pointName = (firstPersonalization == null ? void 0 : firstPersonalization.personalizationPointName) || (firstPersonalization == null ? void 0 : firstPersonalization.PersonalizationPointName);
+  const hasRenderableData = hasPersonalizations && Array.isArray((_c = (_b = curation[0].personalizations) == null ? void 0 : _b[0]) == null ? void 0 : _c.data) && (((_d = curation[0].personalizations[0].data) == null ? void 0 : _d.length) ?? 0) > 0;
+  const showPlaceholder = !contentZoneContent2 || isFetchingPersonalization;
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: show && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$b.contentZoneContainer, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$b.contentZoneContent, children: [
+    showPlaceholder && /* @__PURE__ */ jsxRuntimeExports.jsx(Placeholder, {}),
+    !showPlaceholder && fetchError && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$b.blankContent, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+      "Unable to load recommendations. ",
+      fetchError
+    ] }) }),
+    !showPlaceholder && !fetchError && contentZoneContent2 && (() => {
+      if (hasPersonalizations && pointName === "TMG_Project_Overview") {
+        return /* @__PURE__ */ jsxRuntimeExports.jsx(ProjectOverview$2, { content: contentZoneContent2, onBack: handlePropertyDetailsBack });
+      }
+      if (hasPersonalizations && pointName === "Schedule_Appointment") {
+        return /* @__PURE__ */ jsxRuntimeExports.jsx(ScheduleAppointment$2, { content: contentZoneContent2, onBack: handlePropertyDetailsBack });
+      }
+      const template = contentZoneContent2.template;
+      const templateName = (template == null ? void 0 : template[0]) && typeof template[0] === "object" && template[0] !== null && "name" in template[0] ? template[0].name : null;
+      if (templateName === "Recs" || templateName === "tmgPropertyView" || hasPersonalizations && (hasRenderableData || !isFetchingPersonalization)) {
         return /* @__PURE__ */ jsxRuntimeExports.jsx(Recs$2, { content: contentZoneContent2 });
-      } else if (templateName === "Comparison") {
-        return /* @__PURE__ */ jsxRuntimeExports.jsx(Comparison$2, { content: contentZoneContent2 });
-      } else if (templateName === "ProductDetails") {
-        return /* @__PURE__ */ jsxRuntimeExports.jsx(ProductDetails$2, { content: contentZoneContent2 });
-      } else if (templateName === "PropertyDetails" || templateName === "tmgPropertyDetails") {
-        return /* @__PURE__ */ jsxRuntimeExports.jsx(
-          PropertyDetails$2,
-          {
-            content: contentZoneContent2,
-            onBack: handlePropertyDetailsBack
-          }
-        );
-      } else if (templateName === "ProjectOverview" || templateName === "TMG_Project_Overview") {
-        return /* @__PURE__ */ jsxRuntimeExports.jsx(
-          ProjectOverview$2,
-          {
-            content: contentZoneContent2,
-            onBack: handlePropertyDetailsBack
-          }
-        );
-      } else if (templateName === "ScheduleAppointment" || templateName === "Schedule_Appointment") {
-        return /* @__PURE__ */ jsxRuntimeExports.jsx(
-          ScheduleAppointment$2,
-          {
-            content: contentZoneContent2,
-            onBack: handlePropertyDetailsBack
-          }
-        );
       }
-    }
-    const curation = contentZoneContent2.curation;
-    if (Array.isArray(curation) && curation.length > 0 && "personalizations" in curation[0]) {
-      const firstItem = curation[0];
-      if (Array.isArray(firstItem.personalizations) && firstItem.personalizations.length > 0) {
-        const personalization = firstItem.personalizations[0];
-        if (personalization.PersonalizationPointName === "TMG_Project_Overview") {
-          return /* @__PURE__ */ jsxRuntimeExports.jsx(
-            ProjectOverview$2,
-            {
-              content: contentZoneContent2,
-              onBack: handlePropertyDetailsBack
-            }
-          );
-        }
-        if (personalization.PersonalizationPointName === "Schedule_Appointment") {
-          return /* @__PURE__ */ jsxRuntimeExports.jsx(
-            ScheduleAppointment$2,
-            {
-              content: contentZoneContent2,
-              onBack: handlePropertyDetailsBack
-            }
-          );
-        }
+      if (templateName === "Comparison") return /* @__PURE__ */ jsxRuntimeExports.jsx(Comparison$2, { content: contentZoneContent2 });
+      if (templateName === "ProductDetails") return /* @__PURE__ */ jsxRuntimeExports.jsx(ProductDetails$2, { content: contentZoneContent2 });
+      if (templateName === "PropertyDetails" || templateName === "tmgPropertyDetails") {
+        return /* @__PURE__ */ jsxRuntimeExports.jsx(PropertyDetails$2, { content: contentZoneContent2, onBack: handlePropertyDetailsBack });
       }
-      return /* @__PURE__ */ jsxRuntimeExports.jsx(Recs$2, { content: contentZoneContent2 });
-    }
-    if (curation && typeof curation === "object" && "property" in curation) {
-      return /* @__PURE__ */ jsxRuntimeExports.jsx(
-        PropertyDetails$2,
-        {
-          content: contentZoneContent2,
-          onBack: handlePropertyDetailsBack
-        }
-      );
-    }
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(Placeholder, {});
-  })() : /* @__PURE__ */ jsxRuntimeExports.jsx(Placeholder, {}) }) }) });
+      if (templateName === "ProjectOverview" || templateName === "TMG_Project_Overview") {
+        return /* @__PURE__ */ jsxRuntimeExports.jsx(ProjectOverview$2, { content: contentZoneContent2, onBack: handlePropertyDetailsBack });
+      }
+      if (templateName === "ScheduleAppointment" || templateName === "Schedule_Appointment") {
+        return /* @__PURE__ */ jsxRuntimeExports.jsx(ScheduleAppointment$2, { content: contentZoneContent2, onBack: handlePropertyDetailsBack });
+      }
+      if (curation && typeof curation === "object" && "property" in curation) {
+        return /* @__PURE__ */ jsxRuntimeExports.jsx(PropertyDetails$2, { content: contentZoneContent2, onBack: handlePropertyDetailsBack });
+      }
+      if (hasPersonalizations) return /* @__PURE__ */ jsxRuntimeExports.jsx(Recs$2, { content: contentZoneContent2 });
+      return /* @__PURE__ */ jsxRuntimeExports.jsx(Placeholder, {});
+    })()
+  ] }) }) });
 };
-const Placeholder = () => {
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$b.blankContent, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$b.typingIndicator, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("span", {}),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("span", {}),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("span", {})
-  ] }) });
-};
+const Placeholder = () => /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: styles$b.blankContent, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$b.typingIndicator, children: [
+  /* @__PURE__ */ jsxRuntimeExports.jsx("span", {}),
+  /* @__PURE__ */ jsxRuntimeExports.jsx("span", {}),
+  /* @__PURE__ */ jsxRuntimeExports.jsx("span", {})
+] }) });
 const headerContainer = "_headerContainer_1w65b_1";
 const agentName = "_agentName_1w65b_13";
 const endConversationButton = "_endConversationButton_1w65b_22";
