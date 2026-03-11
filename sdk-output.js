@@ -20481,7 +20481,12 @@ const ContentZone = ({ show }) => {
       setFetchError(null);
       try {
         if (!((_b2 = (_a2 = window.SalesforceInteractions) == null ? void 0 : _a2.Personalization) == null ? void 0 : _b2.fetch)) {
-          throw new Error("SalesforceInteractions.Personalization.fetch not available. Ensure C360A beacon is loaded.");
+          console.warn("[ContentZone] SalesforceInteractions.Personalization.fetch not available. Using agent response.");
+          setContentZoneContent({
+            ...baseContent,
+            template: baseContent.template ?? [{ name: "Recs" }]
+          });
+          return;
         }
         const response = await window.SalesforceInteractions.Personalization.fetch(pointNames);
         const personalizations = (response == null ? void 0 : response.personalizations) ?? [];
