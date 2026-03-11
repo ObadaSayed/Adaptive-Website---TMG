@@ -4019,27 +4019,27 @@ function addAppToPage() {
 /* ═══════════════════════════════════════════
    PROJECT DETAILS PANEL (right side)
    ═══════════════════════════════════════════ */
-._detailsPanel_ftvpl_4 {
+._detailsPanel_2dfq9_4 {
   overflow-y: auto;
   background: var(--cream);
   scroll-behavior: smooth;
 }
 
 /* ── DETAILS HERO ── */
-._detailsHero_ftvpl_11 {
+._detailsHero_2dfq9_11 {
   position: relative;
   height: 340px;
   overflow: hidden;
 }
 
-._detailsHero_ftvpl_11 img {
+._detailsHero_2dfq9_11 img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   filter: brightness(0.7) contrast(1.05);
 }
 
-._detailsHeroOverlay_ftvpl_24 {
+._detailsHeroOverlay_2dfq9_24 {
   position: absolute;
   inset: 0;
   background: linear-gradient(
@@ -4054,7 +4054,7 @@ function addAppToPage() {
   padding: 36px 40px;
 }
 
-._detailsHeroBack_ftvpl_39 {
+._detailsHeroBack_2dfq9_39 {
   position: absolute;
   top: 20px;
   left: 20px;
@@ -4076,17 +4076,17 @@ function addAppToPage() {
   border: none;
 }
 
-._detailsHeroBack_ftvpl_39:hover {
+._detailsHeroBack_2dfq9_39:hover {
   border-color: var(--gold);
   color: var(--gold);
 }
 
-._detailsHeroBack_ftvpl_39 svg {
+._detailsHeroBack_2dfq9_39 svg {
   width: 14px;
   height: 14px;
 }
 
-._detailsHeroBadge_ftvpl_71 {
+._detailsHeroBadge_2dfq9_71 {
   display: inline-block;
   padding: 5px 16px;
   border: 1px solid var(--gold);
@@ -4100,7 +4100,7 @@ function addAppToPage() {
   font-family: var(--sans);
 }
 
-._detailsHero_ftvpl_11 h1 {
+._detailsHero_2dfq9_11 h1 {
   font-family: var(--serif);
   font-size: 42px;
   font-weight: 300;
@@ -4109,12 +4109,12 @@ function addAppToPage() {
   margin-bottom: 8px;
 }
 
-._detailsHero_ftvpl_11 h1 em {
+._detailsHero_2dfq9_11 h1 em {
   font-style: italic;
   color: var(--gold);
 }
 
-._detailsHeroDeveloper_ftvpl_99 {
+._detailsHeroDeveloper_2dfq9_99 {
   font-size: 12px;
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -4123,18 +4123,18 @@ function addAppToPage() {
   font-family: var(--sans);
 }
 
-._detailsHeroDeveloper_ftvpl_99 span {
+._detailsHeroDeveloper_2dfq9_99 span {
   color: var(--gold-light);
 }
 
 /* hero stats strip */
-._detailsStats_ftvpl_113 {
+._detailsStats_2dfq9_113 {
   display: flex;
   background: var(--dark);
   border-bottom: 1px solid rgba(201,169,110,0.12);
 }
 
-._detailsStat_ftvpl_113 {
+._detailsStat_2dfq9_113 {
   flex: 1;
   padding: 20px 24px;
   text-align: center;
@@ -4142,15 +4142,15 @@ function addAppToPage() {
   transition: background 0.3s;
 }
 
-._detailsStat_ftvpl_113:last-child {
+._detailsStat_2dfq9_113:last-child {
   border-right: none;
 }
 
-._detailsStat_ftvpl_113:hover {
+._detailsStat_2dfq9_113:hover {
   background: rgba(201,169,110,0.04);
 }
 
-._detailsStatValue_ftvpl_135 {
+._detailsStatValue_2dfq9_135 {
   font-family: var(--serif);
   font-size: 26px;
   font-weight: 400;
@@ -4159,7 +4159,7 @@ function addAppToPage() {
   margin-bottom: 4px;
 }
 
-._detailsStatLabel_ftvpl_144 {
+._detailsStatLabel_2dfq9_144 {
   font-size: 10px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
@@ -4169,29 +4169,29 @@ function addAppToPage() {
 }
 
 /* ── SECTION COMMON ── */
-._ds_ftvpl_154 {
+._ds_2dfq9_154 {
   padding: 48px 40px;
 }
 
-._dsLight_ftvpl_158 {
+._dsLight_2dfq9_158 {
   background: var(--cream);
 }
 
-._dsWhite_ftvpl_162 {
+._dsWhite_2dfq9_162 {
   background: #fff;
 }
 
-._dsDark_ftvpl_166 {
+._dsDark_2dfq9_166 {
   background: var(--dark);
   color: #fff;
 }
 
-._dsDarker_ftvpl_171 {
+._dsDarker_2dfq9_171 {
   background: var(--dark-card);
   color: #fff;
 }
 
-._dsLabel_ftvpl_176 {
+._dsLabel_2dfq9_176 {
   font-size: 10px;
   letter-spacing: 4px;
   text-transform: uppercase;
@@ -4201,7 +4201,7 @@ function addAppToPage() {
   font-family: var(--sans);
 }
 
-._dsTitle_ftvpl_186 {
+._dsTitle_2dfq9_186 {
   font-family: var(--serif);
   font-size: 32px;
   font-weight: 300;
@@ -4209,12 +4209,12 @@ function addAppToPage() {
   margin-bottom: 16px;
 }
 
-._dsTitle_ftvpl_186 em {
+._dsTitle_2dfq9_186 em {
   font-style: italic;
   color: var(--gold);
 }
 
-._dsDesc_ftvpl_199 {
+._dsDesc_2dfq9_199 {
   font-size: 14px;
   font-weight: 300;
   color: var(--text-secondary);
@@ -4223,38 +4223,38 @@ function addAppToPage() {
   font-family: var(--sans);
 }
 
-._dsDark_ftvpl_166 ._dsDesc_ftvpl_199 {
+._dsDark_2dfq9_166 ._dsDesc_2dfq9_199 {
   color: rgba(255,255,255,0.5);
 }
 
 /* ── DESCRIPTION SECTION ── */
-._descSection_ftvpl_213 {
+._descSection_2dfq9_213 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 40px;
   align-items: start;
 }
 
-._descHighlights_ftvpl_220 {
+._descHighlights_2dfq9_220 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
   margin-top: 8px;
 }
 
-._descHighlight_ftvpl_220 {
+._descHighlight_2dfq9_220 {
   padding: 20px;
   background: rgba(201,169,110,0.04);
   border: 1px solid rgba(201,169,110,0.1);
   transition: all 0.3s;
 }
 
-._descHighlight_ftvpl_220:hover {
+._descHighlight_2dfq9_220:hover {
   background: rgba(201,169,110,0.08);
   border-color: rgba(201,169,110,0.25);
 }
 
-._descHighlightValue_ftvpl_239 {
+._descHighlightValue_2dfq9_239 {
   font-family: var(--serif);
   font-size: 28px;
   font-weight: 400;
@@ -4263,7 +4263,7 @@ function addAppToPage() {
   margin-bottom: 4px;
 }
 
-._descHighlightLabel_ftvpl_248 {
+._descHighlightLabel_2dfq9_248 {
   font-size: 11px;
   color: var(--text-secondary);
   font-weight: 400;
@@ -4272,19 +4272,19 @@ function addAppToPage() {
 }
 
 /* ── UNIT TYPES ── */
-._unitTypesHeader_ftvpl_257 {
+._unitTypesHeader_2dfq9_257 {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
   margin-bottom: 32px;
 }
 
-._unitTabs_ftvpl_264 {
+._unitTabs_2dfq9_264 {
   display: flex;
   gap: 6px;
 }
 
-._unitTab_ftvpl_264 {
+._unitTab_2dfq9_264 {
   padding: 8px 20px;
   background: transparent;
   border: 1px solid rgba(255,255,255,0.1);
@@ -4297,20 +4297,20 @@ function addAppToPage() {
   transition: all 0.3s;
 }
 
-._unitTab_ftvpl_264._active_ftvpl_282,
-._unitTab_ftvpl_264:hover {
+._unitTab_2dfq9_264._active_2dfq9_282,
+._unitTab_2dfq9_264:hover {
   border-color: var(--gold);
   color: var(--gold);
   background: rgba(201,169,110,0.06);
 }
 
-._unitGrid_ftvpl_289 {
+._unitGrid_2dfq9_289 {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 12px;
 }
 
-._unitCard_ftvpl_295 {
+._unitCard_2dfq9_295 {
   background: var(--dark-surface);
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.04);
@@ -4318,30 +4318,30 @@ function addAppToPage() {
   cursor: pointer;
 }
 
-._unitCard_ftvpl_295:hover {
+._unitCard_2dfq9_295:hover {
   transform: translateY(-3px);
   border-color: rgba(201,169,110,0.3);
   box-shadow: 0 12px 40px rgba(0,0,0,0.4);
 }
 
-._unitCardImg_ftvpl_309 {
+._unitCardImg_2dfq9_309 {
   position: relative;
   aspect-ratio: 16/10;
   overflow: hidden;
 }
 
-._unitCardImg_ftvpl_309 img {
+._unitCardImg_2dfq9_309 img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-._unitCard_ftvpl_295:hover ._unitCardImg_ftvpl_309 img {
+._unitCard_2dfq9_295:hover ._unitCardImg_2dfq9_309 img {
   transform: scale(1.06);
 }
 
-._unitCardType_ftvpl_326 {
+._unitCardType_2dfq9_326 {
   position: absolute;
   top: 10px;
   left: 10px;
@@ -4355,11 +4355,11 @@ function addAppToPage() {
   font-family: var(--sans);
 }
 
-._unitCardBody_ftvpl_340 {
+._unitCardBody_2dfq9_340 {
   padding: 14px;
 }
 
-._unitCardName_ftvpl_344 {
+._unitCardName_2dfq9_344 {
   font-family: var(--serif);
   font-size: 18px;
   font-weight: 500;
@@ -4367,13 +4367,13 @@ function addAppToPage() {
   margin-bottom: 8px;
 }
 
-._unitCardSpecs_ftvpl_352 {
+._unitCardSpecs_2dfq9_352 {
   display: flex;
   gap: 12px;
   margin-bottom: 10px;
 }
 
-._unitCardSpec_ftvpl_352 {
+._unitCardSpec_2dfq9_352 {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -4382,14 +4382,14 @@ function addAppToPage() {
   font-family: var(--sans);
 }
 
-._unitCardSpec_ftvpl_352 svg {
+._unitCardSpec_2dfq9_352 svg {
   width: 12px;
   height: 12px;
   color: var(--gold);
   opacity: 0.6;
 }
 
-._unitCardArea_ftvpl_374 {
+._unitCardArea_2dfq9_374 {
   padding-top: 10px;
   border-top: 1px solid rgba(255,255,255,0.06);
   display: flex;
@@ -4397,13 +4397,13 @@ function addAppToPage() {
   align-items: center;
 }
 
-._unitCardAreaVal_ftvpl_382 {
+._unitCardAreaVal_2dfq9_382 {
   font-family: var(--serif);
   font-size: 16px;
   color: var(--gold);
 }
 
-._unitCardDl_ftvpl_388 {
+._unitCardDl_2dfq9_388 {
   font-size: 10px;
   color: var(--gold);
   text-decoration: none;
@@ -4412,39 +4412,129 @@ function addAppToPage() {
   opacity: 0.7;
   transition: opacity 0.3s;
   font-family: var(--sans);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
 }
 
-._unitCardDl_ftvpl_388:hover {
+._unitCardDl_2dfq9_388:hover {
   opacity: 1;
 }
 
+/* ── FLOORPLAN OVERLAY ── */
+._floorplanOverlay_2dfq9_408 {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  backdrop-filter: blur(4px);
+}
+
+._floorplanPanel_2dfq9_420 {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
+  width: min(560px, 100%);
+  height: min(80vh, 720px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+._floorplanHeader_2dfq9_431 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: var(--dark);
+  flex-shrink: 0;
+}
+
+._floorplanHeaderActions_2dfq9_440 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+._floorplanOpenNew_2dfq9_446 {
+  font-size: 11px;
+  color: var(--gold);
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  opacity: 0.9;
+  transition: opacity 0.2s;
+}
+
+._floorplanOpenNew_2dfq9_446:hover {
+  opacity: 1;
+}
+
+._floorplanTitle_2dfq9_459 {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+._floorplanClose_2dfq9_467 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+._floorplanClose_2dfq9_467:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+._floorplanIframe_2dfq9_486 {
+  flex: 1;
+  border: none;
+  width: 100%;
+  min-height: 0;
+}
+
 /* ── FACILITIES GRID ── */
-._facilitiesGrid_ftvpl_404 {
+._facilitiesGrid_2dfq9_494 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 2px;
   margin-top: 32px;
 }
 
-._facilityItem_ftvpl_411 {
+._facilityItem_2dfq9_501 {
   position: relative;
   aspect-ratio: 4/3;
   overflow: hidden;
   cursor: pointer;
 }
 
-._facilityItem_ftvpl_411 img {
+._facilityItem_2dfq9_501 img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-._facilityItem_ftvpl_411:hover img {
+._facilityItem_2dfq9_501:hover img {
   transform: scale(1.08);
 }
 
-._facilityOverlay_ftvpl_429 {
+._facilityOverlay_2dfq9_519 {
   position: absolute;
   inset: 0;
   background: linear-gradient(to top, rgba(10,10,10,0.88) 0%, transparent 55%);
@@ -4455,11 +4545,11 @@ function addAppToPage() {
   transition: background 0.4s;
 }
 
-._facilityItem_ftvpl_411:hover ._facilityOverlay_ftvpl_429 {
+._facilityItem_2dfq9_501:hover ._facilityOverlay_2dfq9_519 {
   background: linear-gradient(to top, rgba(10,10,10,0.94) 0%, rgba(10,10,10,0.3) 100%);
 }
 
-._facilityName_ftvpl_444 {
+._facilityName_2dfq9_534 {
   font-family: var(--serif);
   font-size: 18px;
   font-weight: 400;
@@ -4467,7 +4557,7 @@ function addAppToPage() {
   margin-bottom: 4px;
 }
 
-._facilityDesc_ftvpl_452 {
+._facilityDesc_2dfq9_542 {
   font-size: 11px;
   color: rgba(255,255,255,0.55);
   line-height: 1.6;
@@ -4479,13 +4569,13 @@ function addAppToPage() {
   font-family: var(--sans);
 }
 
-._facilityItem_ftvpl_411:hover ._facilityDesc_ftvpl_452 {
+._facilityItem_2dfq9_501:hover ._facilityDesc_2dfq9_542 {
   max-height: 80px;
   opacity: 1;
 }
 
 /* ── SMART HOME ── */
-._smartGrid_ftvpl_470 {
+._smartGrid_2dfq9_560 {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 1px;
@@ -4493,7 +4583,7 @@ function addAppToPage() {
   background: rgba(255,255,255,0.04);
 }
 
-._smartItem_ftvpl_478 {
+._smartItem_2dfq9_568 {
   padding: 32px 20px;
   text-align: center;
   background: var(--dark-card);
@@ -4501,12 +4591,12 @@ function addAppToPage() {
   transition: all 0.4s;
 }
 
-._smartItem_ftvpl_478:hover {
+._smartItem_2dfq9_568:hover {
   background: rgba(201,169,110,0.05);
   border-color: rgba(201,169,110,0.15);
 }
 
-._smartIcon_ftvpl_491 {
+._smartIcon_2dfq9_581 {
   width: 48px;
   height: 48px;
   margin: 0 auto 16px;
@@ -4517,11 +4607,11 @@ function addAppToPage() {
   border-radius: 50%;
 }
 
-._smartIcon_ftvpl_491 svg {
+._smartIcon_2dfq9_581 svg {
   color: var(--gold);
 }
 
-._smartItem_ftvpl_478 h4 {
+._smartItem_2dfq9_568 h4 {
   font-family: var(--serif);
   font-size: 16px;
   font-weight: 400;
@@ -4529,7 +4619,7 @@ function addAppToPage() {
   margin-bottom: 8px;
 }
 
-._smartItem_ftvpl_478 p {
+._smartItem_2dfq9_568 p {
   font-size: 11px;
   color: rgba(255,255,255,0.4);
   line-height: 1.6;
@@ -4538,14 +4628,14 @@ function addAppToPage() {
 }
 
 /* ── AMENITIES ── */
-._amenitiesLayout_ftvpl_523 {
+._amenitiesLayout_2dfq9_613 {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 36px;
   margin-top: 32px;
 }
 
-._amenityCol_ftvpl_530 h3 {
+._amenityCol_2dfq9_620 h3 {
   font-family: var(--serif);
   font-size: 20px;
   font-weight: 400;
@@ -4555,7 +4645,7 @@ function addAppToPage() {
   color: var(--text-primary);
 }
 
-._amenityList_ftvpl_540 {
+._amenityList_2dfq9_630 {
   list-style: none;
   display: flex;
   flex-direction: column;
@@ -4564,7 +4654,7 @@ function addAppToPage() {
   margin: 0;
 }
 
-._amenityList_ftvpl_540 li {
+._amenityList_2dfq9_630 li {
   font-size: 13px;
   font-weight: 300;
   color: var(--text-secondary);
@@ -4574,7 +4664,7 @@ function addAppToPage() {
   font-family: var(--sans);
 }
 
-._amenityList_ftvpl_540 li::before {
+._amenityList_2dfq9_630 li::before {
   content: '';
   position: absolute;
   left: 0;
@@ -4586,23 +4676,23 @@ function addAppToPage() {
 }
 
 /* ── FINANCIAL + CONNECTIVITY ROW ── */
-._dualSection_ftvpl_571 {
+._dualSection_2dfq9_661 {
   display: grid;
   grid-template-columns: 1fr 1fr;
 }
 
-._dualSection_ftvpl_571 > div {
+._dualSection_2dfq9_661 > div {
   padding: 48px 40px;
 }
 
-._finCards_ftvpl_580 {
+._finCards_2dfq9_670 {
   display: flex;
   flex-direction: column;
   gap: 16px;
   margin-top: 24px;
 }
 
-._finCard_ftvpl_580 {
+._finCard_2dfq9_670 {
   display: flex;
   align-items: center;
   gap: 20px;
@@ -4612,12 +4702,12 @@ function addAppToPage() {
   transition: all 0.3s;
 }
 
-._finCard_ftvpl_580:hover {
+._finCard_2dfq9_670:hover {
   background: rgba(201,169,110,0.08);
   border-color: rgba(201,169,110,0.2);
 }
 
-._finCardIcon_ftvpl_602 {
+._finCardIcon_2dfq9_692 {
   width: 44px;
   height: 44px;
   flex-shrink: 0;
@@ -4628,11 +4718,11 @@ function addAppToPage() {
   border-radius: 50%;
 }
 
-._finCardIcon_ftvpl_602 svg {
+._finCardIcon_2dfq9_692 svg {
   color: var(--gold);
 }
 
-._finCardLabel_ftvpl_617 {
+._finCardLabel_2dfq9_707 {
   font-size: 11px;
   color: var(--text-secondary);
   letter-spacing: 0.5px;
@@ -4640,7 +4730,7 @@ function addAppToPage() {
   font-family: var(--sans);
 }
 
-._finCardValue_ftvpl_625 {
+._finCardValue_2dfq9_715 {
   font-family: var(--serif);
   font-size: 22px;
   font-weight: 500;
@@ -4648,13 +4738,13 @@ function addAppToPage() {
 }
 
 /* connectivity */
-._connItems_ftvpl_633 {
+._connItems_2dfq9_723 {
   display: flex;
   flex-direction: column;
   margin-top: 24px;
 }
 
-._connItem_ftvpl_633 {
+._connItem_2dfq9_723 {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -4662,21 +4752,21 @@ function addAppToPage() {
   border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 
-._connItemDest_ftvpl_647 {
+._connItemDest_2dfq9_737 {
   font-size: 13px;
   font-weight: 300;
   color: rgba(255,255,255,0.6);
   font-family: var(--sans);
 }
 
-._connItemTime_ftvpl_654 {
+._connItemTime_2dfq9_744 {
   font-family: var(--serif);
   font-size: 20px;
   color: var(--gold);
   font-weight: 400;
 }
 
-._connNote_ftvpl_661 {
+._connNote_2dfq9_751 {
   margin-top: 20px;
   padding: 16px 20px;
   background: rgba(201,169,110,0.06);
@@ -4689,14 +4779,14 @@ function addAppToPage() {
 }
 
 /* ── CTA STRIP ── */
-._ctaStrip_ftvpl_674 {
+._ctaStrip_2dfq9_764 {
   padding: 40px;
   background: var(--dark);
   text-align: center;
   border-top: 1px solid rgba(201,169,110,0.1);
 }
 
-._ctaStrip_ftvpl_674 h3 {
+._ctaStrip_2dfq9_764 h3 {
   font-family: var(--serif);
   font-size: 28px;
   font-weight: 300;
@@ -4704,12 +4794,12 @@ function addAppToPage() {
   margin-bottom: 8px;
 }
 
-._ctaStrip_ftvpl_674 h3 em {
+._ctaStrip_2dfq9_764 h3 em {
   font-style: italic;
   color: var(--gold);
 }
 
-._ctaStrip_ftvpl_674 p {
+._ctaStrip_2dfq9_764 p {
   font-size: 13px;
   color: rgba(255,255,255,0.4);
   font-weight: 300;
@@ -4717,13 +4807,13 @@ function addAppToPage() {
   font-family: var(--sans);
 }
 
-._ctaStripActions_ftvpl_702 {
+._ctaStripActions_2dfq9_792 {
   display: flex;
   gap: 12px;
   justify-content: center;
 }
 
-._btnGold_ftvpl_708 {
+._btnGold_2dfq9_798 {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -4741,12 +4831,12 @@ function addAppToPage() {
   transition: all 0.3s;
 }
 
-._btnGold_ftvpl_708:hover {
+._btnGold_2dfq9_798:hover {
   background: var(--gold-light);
   transform: translateY(-1px);
 }
 
-._btnGhost_ftvpl_731 {
+._btnGhost_2dfq9_821 {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -4764,56 +4854,56 @@ function addAppToPage() {
   transition: all 0.3s;
 }
 
-._btnGhost_ftvpl_731:hover {
+._btnGhost_2dfq9_821:hover {
   border-color: var(--gold);
   color: var(--gold);
 }
 
 /* ── SCROLL ANIMATIONS ── */
-._reveal_ftvpl_755 {
+._reveal_2dfq9_845 {
   opacity: 0;
   transform: translateY(24px);
   transition: all 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-._reveal_ftvpl_755._visible_ftvpl_761 {
+._reveal_2dfq9_845._visible_2dfq9_851 {
   opacity: 1;
   transform: translateY(0);
 }
 
 /* ── RESPONSIVE ── */
 @media (max-width: 1100px) {
-  ._facilitiesGrid_ftvpl_404 {
+  ._facilitiesGrid_2dfq9_494 {
     grid-template-columns: repeat(2, 1fr);
   }
-  ._smartGrid_ftvpl_470 {
+  ._smartGrid_2dfq9_560 {
     grid-template-columns: repeat(3, 1fr);
   }
-  ._amenitiesLayout_ftvpl_523 {
+  ._amenitiesLayout_2dfq9_613 {
     grid-template-columns: 1fr;
   }
-  ._dualSection_ftvpl_571 {
+  ._dualSection_2dfq9_661 {
     grid-template-columns: 1fr;
   }
-  ._descSection_ftvpl_213 {
+  ._descSection_2dfq9_213 {
     grid-template-columns: 1fr;
   }
-  ._unitGrid_ftvpl_289 {
+  ._unitGrid_2dfq9_289 {
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   }
 }
 
 @media (max-width: 900px) {
-  ._detailsHero_ftvpl_11 h1 {
+  ._detailsHero_2dfq9_11 h1 {
     font-size: 32px;
   }
-  ._dsTitle_ftvpl_186 {
+  ._dsTitle_2dfq9_186 {
     font-size: 24px;
   }
-  ._detailsStats_ftvpl_113 {
+  ._detailsStats_2dfq9_113 {
     flex-wrap: wrap;
   }
-  ._detailsStat_ftvpl_113 {
+  ._detailsStat_2dfq9_113 {
     flex: 1 1 50%;
   }
 }
@@ -21733,71 +21823,79 @@ const PropertyDetails$1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.d
   __proto__: null,
   default: PropertyDetails
 }, Symbol.toStringTag, { value: "Module" }));
-const detailsPanel = "_detailsPanel_ftvpl_4";
-const detailsHero = "_detailsHero_ftvpl_11";
-const detailsHeroOverlay = "_detailsHeroOverlay_ftvpl_24";
-const detailsHeroBack = "_detailsHeroBack_ftvpl_39";
-const detailsHeroBadge = "_detailsHeroBadge_ftvpl_71";
-const detailsHeroDeveloper = "_detailsHeroDeveloper_ftvpl_99";
-const detailsStats = "_detailsStats_ftvpl_113";
-const detailsStat = "_detailsStat_ftvpl_113";
-const detailsStatValue = "_detailsStatValue_ftvpl_135";
-const detailsStatLabel = "_detailsStatLabel_ftvpl_144";
-const ds = "_ds_ftvpl_154";
-const dsLight = "_dsLight_ftvpl_158";
-const dsWhite = "_dsWhite_ftvpl_162";
-const dsDark = "_dsDark_ftvpl_166";
-const dsDarker = "_dsDarker_ftvpl_171";
-const dsLabel = "_dsLabel_ftvpl_176";
-const dsTitle = "_dsTitle_ftvpl_186";
-const dsDesc = "_dsDesc_ftvpl_199";
-const descSection = "_descSection_ftvpl_213";
-const descHighlights = "_descHighlights_ftvpl_220";
-const descHighlight = "_descHighlight_ftvpl_220";
-const descHighlightValue = "_descHighlightValue_ftvpl_239";
-const descHighlightLabel = "_descHighlightLabel_ftvpl_248";
-const unitTypesHeader = "_unitTypesHeader_ftvpl_257";
-const unitTabs = "_unitTabs_ftvpl_264";
-const unitTab = "_unitTab_ftvpl_264";
-const active = "_active_ftvpl_282";
-const unitGrid = "_unitGrid_ftvpl_289";
-const unitCard = "_unitCard_ftvpl_295";
-const unitCardImg = "_unitCardImg_ftvpl_309";
-const unitCardType = "_unitCardType_ftvpl_326";
-const unitCardBody = "_unitCardBody_ftvpl_340";
-const unitCardName = "_unitCardName_ftvpl_344";
-const unitCardSpecs = "_unitCardSpecs_ftvpl_352";
-const unitCardSpec = "_unitCardSpec_ftvpl_352";
-const unitCardArea = "_unitCardArea_ftvpl_374";
-const unitCardAreaVal = "_unitCardAreaVal_ftvpl_382";
-const unitCardDl = "_unitCardDl_ftvpl_388";
-const facilitiesGrid = "_facilitiesGrid_ftvpl_404";
-const facilityItem = "_facilityItem_ftvpl_411";
-const facilityOverlay = "_facilityOverlay_ftvpl_429";
-const facilityName = "_facilityName_ftvpl_444";
-const facilityDesc = "_facilityDesc_ftvpl_452";
-const smartGrid = "_smartGrid_ftvpl_470";
-const smartItem = "_smartItem_ftvpl_478";
-const smartIcon = "_smartIcon_ftvpl_491";
-const amenitiesLayout = "_amenitiesLayout_ftvpl_523";
-const amenityCol = "_amenityCol_ftvpl_530";
-const amenityList = "_amenityList_ftvpl_540";
-const dualSection = "_dualSection_ftvpl_571";
-const finCards = "_finCards_ftvpl_580";
-const finCard = "_finCard_ftvpl_580";
-const finCardIcon = "_finCardIcon_ftvpl_602";
-const finCardLabel = "_finCardLabel_ftvpl_617";
-const finCardValue = "_finCardValue_ftvpl_625";
-const connItems = "_connItems_ftvpl_633";
-const connItem = "_connItem_ftvpl_633";
-const connItemDest = "_connItemDest_ftvpl_647";
-const connItemTime = "_connItemTime_ftvpl_654";
-const ctaStrip = "_ctaStrip_ftvpl_674";
-const ctaStripActions = "_ctaStripActions_ftvpl_702";
-const btnGold = "_btnGold_ftvpl_708";
-const btnGhost = "_btnGhost_ftvpl_731";
-const reveal = "_reveal_ftvpl_755";
-const visible = "_visible_ftvpl_761";
+const detailsPanel = "_detailsPanel_2dfq9_4";
+const detailsHero = "_detailsHero_2dfq9_11";
+const detailsHeroOverlay = "_detailsHeroOverlay_2dfq9_24";
+const detailsHeroBack = "_detailsHeroBack_2dfq9_39";
+const detailsHeroBadge = "_detailsHeroBadge_2dfq9_71";
+const detailsHeroDeveloper = "_detailsHeroDeveloper_2dfq9_99";
+const detailsStats = "_detailsStats_2dfq9_113";
+const detailsStat = "_detailsStat_2dfq9_113";
+const detailsStatValue = "_detailsStatValue_2dfq9_135";
+const detailsStatLabel = "_detailsStatLabel_2dfq9_144";
+const ds = "_ds_2dfq9_154";
+const dsLight = "_dsLight_2dfq9_158";
+const dsWhite = "_dsWhite_2dfq9_162";
+const dsDark = "_dsDark_2dfq9_166";
+const dsDarker = "_dsDarker_2dfq9_171";
+const dsLabel = "_dsLabel_2dfq9_176";
+const dsTitle = "_dsTitle_2dfq9_186";
+const dsDesc = "_dsDesc_2dfq9_199";
+const descSection = "_descSection_2dfq9_213";
+const descHighlights = "_descHighlights_2dfq9_220";
+const descHighlight = "_descHighlight_2dfq9_220";
+const descHighlightValue = "_descHighlightValue_2dfq9_239";
+const descHighlightLabel = "_descHighlightLabel_2dfq9_248";
+const unitTypesHeader = "_unitTypesHeader_2dfq9_257";
+const unitTabs = "_unitTabs_2dfq9_264";
+const unitTab = "_unitTab_2dfq9_264";
+const active = "_active_2dfq9_282";
+const unitGrid = "_unitGrid_2dfq9_289";
+const unitCard = "_unitCard_2dfq9_295";
+const unitCardImg = "_unitCardImg_2dfq9_309";
+const unitCardType = "_unitCardType_2dfq9_326";
+const unitCardBody = "_unitCardBody_2dfq9_340";
+const unitCardName = "_unitCardName_2dfq9_344";
+const unitCardSpecs = "_unitCardSpecs_2dfq9_352";
+const unitCardSpec = "_unitCardSpec_2dfq9_352";
+const unitCardArea = "_unitCardArea_2dfq9_374";
+const unitCardAreaVal = "_unitCardAreaVal_2dfq9_382";
+const unitCardDl = "_unitCardDl_2dfq9_388";
+const floorplanOverlay = "_floorplanOverlay_2dfq9_408";
+const floorplanPanel = "_floorplanPanel_2dfq9_420";
+const floorplanHeader = "_floorplanHeader_2dfq9_431";
+const floorplanHeaderActions = "_floorplanHeaderActions_2dfq9_440";
+const floorplanOpenNew = "_floorplanOpenNew_2dfq9_446";
+const floorplanTitle = "_floorplanTitle_2dfq9_459";
+const floorplanClose = "_floorplanClose_2dfq9_467";
+const floorplanIframe = "_floorplanIframe_2dfq9_486";
+const facilitiesGrid = "_facilitiesGrid_2dfq9_494";
+const facilityItem = "_facilityItem_2dfq9_501";
+const facilityOverlay = "_facilityOverlay_2dfq9_519";
+const facilityName = "_facilityName_2dfq9_534";
+const facilityDesc = "_facilityDesc_2dfq9_542";
+const smartGrid = "_smartGrid_2dfq9_560";
+const smartItem = "_smartItem_2dfq9_568";
+const smartIcon = "_smartIcon_2dfq9_581";
+const amenitiesLayout = "_amenitiesLayout_2dfq9_613";
+const amenityCol = "_amenityCol_2dfq9_620";
+const amenityList = "_amenityList_2dfq9_630";
+const dualSection = "_dualSection_2dfq9_661";
+const finCards = "_finCards_2dfq9_670";
+const finCard = "_finCard_2dfq9_670";
+const finCardIcon = "_finCardIcon_2dfq9_692";
+const finCardLabel = "_finCardLabel_2dfq9_707";
+const finCardValue = "_finCardValue_2dfq9_715";
+const connItems = "_connItems_2dfq9_723";
+const connItem = "_connItem_2dfq9_723";
+const connItemDest = "_connItemDest_2dfq9_737";
+const connItemTime = "_connItemTime_2dfq9_744";
+const ctaStrip = "_ctaStrip_2dfq9_764";
+const ctaStripActions = "_ctaStripActions_2dfq9_792";
+const btnGold = "_btnGold_2dfq9_798";
+const btnGhost = "_btnGhost_2dfq9_821";
+const reveal = "_reveal_2dfq9_845";
+const visible = "_visible_2dfq9_851";
 const styles$1 = {
   detailsPanel,
   detailsHero,
@@ -21837,6 +21935,14 @@ const styles$1 = {
   unitCardArea,
   unitCardAreaVal,
   unitCardDl,
+  floorplanOverlay,
+  floorplanPanel,
+  floorplanHeader,
+  floorplanHeaderActions,
+  floorplanOpenNew,
+  floorplanTitle,
+  floorplanClose,
+  floorplanIframe,
   facilitiesGrid,
   facilityItem,
   facilityOverlay,
@@ -21868,6 +21974,7 @@ const styles$1 = {
 const ProjectOverview = ({ content, onBack }) => {
   var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r;
   const [activeTab, setActiveTab] = reactExports.useState("all");
+  const [floorplanOverlay2, setFloorplanOverlay] = reactExports.useState(null);
   const curation = content == null ? void 0 : content.curation;
   let projectData = null;
   if (Array.isArray(curation) && curation.length > 0) {
@@ -22129,12 +22236,14 @@ const ProjectOverview = ({ content, onBack }) => {
                 " m²"
               ] }),
               unit.download_url && /* @__PURE__ */ jsxRuntimeExports.jsx(
-                "a",
+                "button",
                 {
+                  type: "button",
                   className: styles$1.unitCardDl,
-                  href: unit.download_url,
-                  target: "_blank",
-                  rel: "noopener noreferrer",
+                  onClick: (e) => {
+                    e.preventDefault();
+                    setFloorplanOverlay({ url: unit.download_url, label: unit.model_name || "Floorplan" });
+                  },
                   children: "Floorplan ↓"
                 }
               )
@@ -22253,7 +22362,60 @@ const ProjectOverview = ({ content, onBack }) => {
           /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M12 5v14M5 12l7 7 7-7" }) })
         ] })
       ] })
-    ] }) })
+    ] }) }),
+    floorplanOverlay2 && /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "div",
+      {
+        className: styles$1.floorplanOverlay,
+        onClick: () => setFloorplanOverlay(null),
+        role: "presentation",
+        children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "div",
+          {
+            className: styles$1.floorplanPanel,
+            onClick: (e) => e.stopPropagation(),
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.floorplanHeader, children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: styles$1.floorplanTitle, children: [
+                  floorplanOverlay2.label,
+                  " – Floorplan"
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: styles$1.floorplanHeaderActions, children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    "a",
+                    {
+                      href: floorplanOverlay2.url,
+                      target: "_blank",
+                      rel: "noopener noreferrer",
+                      className: styles$1.floorplanOpenNew,
+                      children: "Open in new tab"
+                    }
+                  ),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    "button",
+                    {
+                      type: "button",
+                      className: styles$1.floorplanClose,
+                      onClick: () => setFloorplanOverlay(null),
+                      "aria-label": "Close floorplan",
+                      children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M18 6L6 18M6 6l12 12" }) })
+                    }
+                  )
+                ] })
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "iframe",
+                {
+                  title: `Floorplan - ${floorplanOverlay2.label}`,
+                  src: floorplanOverlay2.url,
+                  className: styles$1.floorplanIframe
+                }
+              )
+            ]
+          }
+        )
+      }
+    )
   ] });
 };
 const ProjectOverview$1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
